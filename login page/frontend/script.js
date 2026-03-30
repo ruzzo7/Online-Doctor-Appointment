@@ -5,7 +5,21 @@ const ROLE_CONFIG = {
     admin  : { icon: 'shield-check',  title: 'Welcome Back, Admin'   }
 };
 
-const API_URL = '../backend/login.php';
+function resolveApiUrl() {
+    const relativeUrl = '../backend/login.php';
+    const isDefaultHttpPort = window.location.protocol.startsWith('http') &&
+        (window.location.port === '' || window.location.port === '80' || window.location.port === '443');
+
+    // If frontend is served from a static dev server (for example :5500),
+    // route API calls to Apache/XAMPP so PHP can handle POST requests.
+    if (!isDefaultHttpPort) {
+        return 'http://localhost/Online-Doctor-Appointment/login%20page/backend/login.php';
+    }
+
+    return relativeUrl;
+}
+
+const API_URL = resolveApiUrl();
 
 // ── State ────────────────────────────────────────────────────────────────────────
 let currentRole  = 'doctor';
@@ -17,7 +31,7 @@ const loginForm         = document.getElementById('loginForm');
 const togglePasswordBtn = document.getElementById('togglePassword');
 const passwordInput     = document.getElementById('password');
 const eyeIcon           = document.getElementById('eyeIcon');
-const headerIcon        = document.getElementById('headerIcon');
+const roleIconWrap      = document.getElementById('roleIconWrap');
 const formTitle         = document.getElementById('formTitle');
 const loginButton       = document.getElementById('loginButton');
 const btnText           = document.getElementById('btnText');
@@ -42,6 +56,17 @@ function init() {
     roleTabs.forEach(tab => tab.addEventListener('click', handleRoleChange));
     loginForm.addEventListener('submit', handleLogin);
     togglePasswordBtn.addEventListener('click', handlePasswordToggle);
+    updateRoleHeader(currentRole);
+}
+
+function updateRoleHeader(role) {
+    const cfg = ROLE_CONFIG[role];
+    if (!cfg) return;
+
+    roleIconWrap.innerHTML = `<i data-lucide="${cfg.icon}"></i>`;
+    formTitle.textContent = cfg.title;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ── Role Change ──────────────────────────────────────────────────────────────────
@@ -55,11 +80,7 @@ function handleRoleChange(e) {
     roleTabs.forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
 
-    // Update icon & title
-    const cfg = ROLE_CONFIG[role];
-    headerIcon.setAttribute('data-lucide', cfg.icon);
-    formTitle.textContent = cfg.title;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    updateRoleHeader(role);
 
     hideMessage();
 }
