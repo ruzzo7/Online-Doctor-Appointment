@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Portal — Dashboard Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <div class="screen-inner">
+
+        <!-- ══════════ LEFT PANEL ══════════ -->
+        <aside class="left-panel">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+
+            <div class="left-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i data-lucide="heart-pulse"></i>
+                    </div>
+                    <span class="logo-text">MediCare Pro</span>
+                </div>
+
+                <!-- Hero text -->
+                <div class="hero">
+                    <h2>Your Smart<br>Healthcare<br>Dashboard</h2>
+                    <p>Manage appointments, patients, and records from one secure place.</p>
+                </div>
+
+                <!-- Stats strip -->
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-num">12k+</span>
+                        <span class="stat-lbl">Patients</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat">
+                        <span class="stat-num">480</span>
+                        <span class="stat-lbl">Doctors</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat">
+                        <span class="stat-num">98%</span>
+                        <span class="stat-lbl">Uptime</span>
+                    </div>
+                </div>
+
+                <!-- Mini card preview -->
+                <div class="preview-cards">
+                    <div class="preview-card">
+                        <i data-lucide="calendar-check"></i>
+                        <div>
+                            <p class="pc-title">Next Appointment</p>
+                            <p class="pc-sub">Today, 2:30 PM</p>
+                        </div>
+                    </div>
+                    <div class="preview-card">
+                        <i data-lucide="activity"></i>
+                        <div>
+                            <p class="pc-title">Active Records</p>
+                            <p class="pc-sub">247 updated today</p>
+                        </div>
+                    </div>
+                    <div class="preview-card">
+                        <i data-lucide="bed"></i>
+                        <div>
+                            <p class="pc-title">Available Beds</p>
+                            <p class="pc-sub">34 of 200 free</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom badge -->
+                <div class="secure-badge">
+                    <i data-lucide="shield-check"></i>
+                    <span>HIPAA Compliant &amp; End-to-End Encrypted</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ══════════ RIGHT PANEL ══════════ -->
+        <main class="right-panel">
+
+            <!-- Top bar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <div class="topbar-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="topbar-label">Healthcare Portal</span>
+                </div>
+                <div class="topbar-right">
+                    <i data-lucide="wifi" class="topbar-icon"></i>
+                    <i data-lucide="bell" class="topbar-icon"></i>
+                    <div class="topbar-time" id="clockDisplay">09:00 AM</div>
+                </div>
+            </div>
+
+            <div class="form-area">
+
+                <!-- Header -->
+                <div class="form-header">
+                    <div class="role-icon-wrap" id="roleIconWrap">
+                        <i data-lucide="stethoscope" id="headerIcon"></i>
+                    </div>
+                    <h1 id="formTitle">Welcome Back, Doctor</h1>
+                    <p class="form-subtitle">Sign in to access your secure dashboard</p>
+                </div>
+
+                <!-- Role Tabs -->
+                <div class="role-tabs">
+                    <button type="button" class="role-tab active" data-role="doctor">
+                        <i data-lucide="stethoscope"></i>
+                        <span>Doctor</span>
+                    </button>
+                    <button type="button" class="role-tab" data-role="patient">
+                        <i data-lucide="user"></i>
+                        <span>Patient</span>
+                    </button>
+                    <button type="button" class="role-tab" data-role="admin">
+                        <i data-lucide="shield-check"></i>
+                        <span>Admin</span>
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="login-form" novalidate>
+
+                    <div class="field-group">
+                        <label for="email">Email Address</label>
+                        <div class="field-wrap">
+                            <i data-lucide="mail" class="field-icon"></i>
+                            <input type="email" id="email" name="email"
+                                   placeholder="you@hospital.com" required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="label-row">
+                            <label for="password">Password</label>
+                            <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+                        </div>
+                        <div class="field-wrap">
+                            <i data-lucide="lock-keyhole" class="field-icon"></i>
+                            <input type="password" id="password" name="password"
+                                   placeholder="Enter your password" required>
+                            <button type="button" class="eye-btn" id="togglePassword">
+                                <i data-lucide="eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message Box -->
+                    <div id="messageBox" class="message-box" style="display:none;"></div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="login-btn" id="loginButton">
+                        <span id="btnText">Sign In</span>
+                        <i data-lucide="arrow-right" id="btnIcon"></i>
+                    </button>
+
+                </form>
+
+                <p class="signup-row">
+                    Don't have an account?
+                    <a href="#" class="signup-link">Request Access</a>
+                </p>
+
+                <!-- Bottom trust indicators -->
+                <div class="trust-row">
+                    <span><i data-lucide="lock"></i> SSL Secured</span>
+                    <span><i data-lucide="shield"></i> HIPAA</span>
+                    <span><i data-lucide="check-circle"></i> ISO 27001</span>
+                </div>
+
+            </div><!-- /form-area -->
+        </main><!-- /right-panel -->
+
+    </div><!-- /screen-inner -->
+
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
