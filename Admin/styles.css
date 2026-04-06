@@ -1,0 +1,270 @@
+:root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --line: #e2e8f0;
+    --text: #17263a;
+    --muted: #607389;
+    --primary: #a855f7;
+    --primary-soft: #faf5ff;
+    --green: #179667;
+    --green-soft: #e8f8f2;
+    --amber: #c78212;
+    --amber-soft: #fff5e4;
+    --red: #cf4a4a;
+    --red-soft: #ffeded;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Manrope', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+}
+
+.dashboard {
+    min-height: 100vh;
+    width: 100%;
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+    grid-template-rows: auto auto 1fr;
+}
+
+.topbar {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.topbar h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.topbar p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn-secondary {
+    background: var(--primary-soft);
+    border-color: #e9d5ff;
+    color: #7e22ce;
+}
+
+.btn-danger {
+    background: #fff7f7;
+    border-color: #f1d7d7;
+    color: var(--red);
+}
+
+.stats {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.stat-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.stat-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+}
+
+.blue {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.green {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.gold {
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.red {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.main-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    height: 100%;
+}
+
+.section-title {
+    margin-bottom: 12px;
+}
+
+.section-title h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.section-title p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.actions {
+    display: grid;
+    gap: 10px;
+}
+
+.action-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    gap: 8px;
+}
+
+.action-card h4 {
+    margin: 0;
+    font-size: 17px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-card p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.request-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.request-item {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.request-item h4 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.request-item p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.badge {
+    width: fit-content;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 960px) {
+    .stats {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+    }
+
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .dashboard {
+        padding: 12px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}

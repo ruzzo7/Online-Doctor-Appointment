@@ -3,26 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — MediCare Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Admin Dashboard | Online Doctor Appointment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; color: #1e293b; }
-        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; max-width: 400px; }
-        .icon { width: 64px; height: 64px; background: #faf5ff; color: #a855f7; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        h1 { font-size: 24px; margin-bottom: 8px; }
-        p { color: #64748b; line-height: 1.6; }
-        .btn { display: inline-block; margin-top: 24px; padding: 12px 24px; background: #a855f7; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.9; }
-    </style>
 </head>
 <body>
-    <div class="card">
-        <div class="icon"><i data-lucide="shield-check"></i></div>
-        <h1>Admin Dashboard</h1>
-        <p>Welcome to the administrator portal. You have full access to manage hospital records, doctor schedules, and patient data.</p>
-        <a href="../login page/frontend/index.html" class="btn">Sign Out</a>
+    <div class="dashboard">
+        <header class="topbar">
+            <div>
+                <h2>Admin Dashboard</h2>
+                <p id="summaryText">Loading dashboard summary...</p>
+            </div>
+
+            <div class="topbar-actions">
+                <button class="btn btn-secondary" id="refreshBtn" type="button"><i data-lucide="refresh-ccw"></i> Refresh</button>
+                <a href="../login page/frontend/index.html" class="btn btn-primary"><i data-lucide="log-out"></i> Sign Out</a>
+            </div>
+        </header>
+
+        <section class="stats">
+            <article class="stat-card">
+                <div class="stat-head"><span class="stat-icon blue"><i data-lucide="stethoscope"></i></span> Total Doctors</div>
+                <p id="totalDoctors">0</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-head"><span class="stat-icon green"><i data-lucide="users"></i></span> Total Patients</div>
+                <p id="totalPatients">0</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-head"><span class="stat-icon gold"><i data-lucide="clock-3"></i></span> Pending Signups</div>
+                <p id="pendingRequests">0</p>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-head"><span class="stat-icon red"><i data-lucide="user-x"></i></span> Inactive Doctors</div>
+                <p id="inactiveDoctors">0</p>
+            </article>
+        </section>
+
+        <section class="main-grid">
+            <section class="panel">
+                <div class="section-title">
+                    <h3>Manage Records</h3>
+                    <p>Choose what you want to manage.</p>
+                </div>
+
+                <div class="actions">
+                    <article class="action-card">
+                        <h4><i data-lucide="user-cog"></i> Manage Doctors</h4>
+                        <p>Add, update, or remove doctor profiles.</p>
+                        <a href="#" class="btn btn-secondary">Open Doctors</a>
+                    </article>
+
+                    <article class="action-card">
+                        <h4><i data-lucide="users-round"></i> Manage Patients</h4>
+                        <p>View and maintain patient records and accounts.</p>
+                        <a href="#" class="btn btn-secondary">Open Patients</a>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="section-title">
+                    <h3>Pending Signup Requests</h3>
+                    <p>Approve or reject new doctor signup requests.</p>
+                </div>
+
+                <ul id="requestList" class="request-list"></ul>
+            </section>
+        </section>
     </div>
-    <script>lucide.createIcons();</script>
+    <script src="script.js"></script>
 </body>
 </html>
