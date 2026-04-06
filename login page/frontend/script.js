@@ -138,7 +138,11 @@ async function handleLogin(e) {
             showMessage(data.message, 'success');
             // Redirect to dashboard after 1.5 s
             setTimeout(() => { 
-                window.location.href = `../../${currentRole}/index.html`; 
+                if (currentRole === 'patient') {
+                    window.location.href = `../../Patient/frontend/index.html`; 
+                } else {
+                    window.location.href = `../../${currentRole}/index.html`; 
+                }
             }, 1500);
         } else {
             showMessage(data.message, 'error');
@@ -152,9 +156,27 @@ async function handleLogin(e) {
     }
 }
 
+// ── Signup Link Handling ────────────────────────────────────────────────────────
+function handleSignupRedirect(e) {
+    e.preventDefault();
+    if (currentRole === 'patient') {
+        window.location.href = '../../Patient/frontend/index.html';
+    } else if (currentRole === 'doctor') {
+        window.location.href = '../../Reg&Login/index.html';
+    } else {
+        showMessage('Signup is only available for Doctors and Patients.', 'error');
+    }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────────
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        const signupLinks = document.querySelectorAll('.signup-link, .signup-row .link-btn');
+        signupLinks.forEach(link => link.addEventListener('click', handleSignupRedirect));
+    });
 } else {
     init();
+    const signupLinks = document.querySelectorAll('.signup-link, .signup-row .link-btn');
+    signupLinks.forEach(link => link.addEventListener('click', handleSignupRedirect));
 }
