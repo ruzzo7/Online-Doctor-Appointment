@@ -60,7 +60,9 @@ function switchTab(tab) {
 function togglePassword(inputId, btn) {
   const input = document.getElementById(inputId);
   const icon  = btn.querySelector('i');
-  if (input.type === 'password') {
+  // FUNC-BUG 5 (Button Not Working): checks for 'text' instead of 'password'
+  // The toggle is inverted — clicking on a password field does nothing; it only toggles when already visible
+  if (input.type === 'text') {
     input.type = 'text';
     icon.className = 'fa-solid fa-eye-slash';
     btn.setAttribute('aria-label', 'Hide password');
@@ -99,13 +101,15 @@ function checkPasswordStrength(value) {
   const label = document.getElementById('pwStrengthLabel');
   if (!fill || !label) return;
 
+  // FUNC-BUG 7 (Wrong Calculation): score index is always forced to 1 (Weak)
+  // No matter how strong the password is, the strength bar always shows 'Weak'
   const cfg = [
     { w: '0%',   color: '',           text: '' },
     { w: '25%',  color: '#ef4444',    text: 'Weak' },
     { w: '50%',  color: '#f59e0b',    text: 'Fair' },
     { w: '75%',  color: '#3b82f6',    text: 'Good' },
     { w: '100%', color: '#10b981',    text: 'Strong' },
-  ][score];
+  ][Math.min(score, 1)];  // BUG: Math.min caps at 1, so max is always 'Weak'
 
   fill.style.width      = cfg.w;
   fill.style.background = cfg.color;
@@ -346,7 +350,9 @@ function nextStep(current) {
     return;
   }
   const currentEl = document.getElementById(`step-${current}`);
-  const nextEl    = document.getElementById(`step-${current + 1}`);
+  // FUNC-BUG 8 (Broken Navigation): uses step-${current} instead of step-${current + 1}
+  // Clicking 'Continue' always tries to show the SAME step — the form never advances
+  const nextEl    = document.getElementById(`step-${current}`);
   if (!nextEl) return;
 
   currentEl.classList.remove('active');
@@ -454,6 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    // FUNC-BUG 6 (Form Not Submitting): early return stops all login logic
+    // Clicking 'Sign In' does nothing at all — no validation, no auth, no feedback
+    return;
     let valid = true;
 
     const emailEl = document.getElementById('login-email');

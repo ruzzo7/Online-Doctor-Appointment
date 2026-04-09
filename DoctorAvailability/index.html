@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Doctor availability management panel – set and manage your schedule for patient bookings." />
+  <title>Set Availability – Doctor Portal</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ===== PAGE WRAPPER ===== -->
+  <div class="page-bg">
+
+    <!-- ===== MAIN CARD ===== -->
+    <main class="card" role="main" aria-label="Doctor Availability Card">
+
+      <!-- ── HEADER ── -->
+      <section class="card__header">
+        <div class="header__title-group">
+          <span class="step-badge">3</span>
+          <h1 class="card__title">Set Availability <span class="title-accent">(Doctor)</span></h1>
+        </div>
+        <div class="header__actions">
+          <!-- Add button -->
+          <button id="btn-add-trigger" class="icon-btn icon-btn--primary" aria-label="Add new time slot"
+            title="Add Time Slot">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+
+          <!-- Filter/Settings button -->
+          <button id="btn-filter" class="icon-btn icon-btn--secondary" aria-label="Filter or settings"
+            title="Filter / Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <div class="card__divider"></div>
+
+      <!-- ── DESCRIPTION ── -->
+      <section class="card__section" aria-labelledby="desc-heading">
+        <p class="section-label" id="desc-heading">Description</p>
+        <div class="info-row">
+          <span class="info-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </span>
+          <div>
+            <p class="info-title">Manage availability schedule</p>
+            <p class="info-sub">Define the days and time slots when you are available for patient appointments.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="card__divider"></div>
+
+      <!-- ── USER STORY ── -->
+      <section class="card__section" aria-labelledby="story-heading">
+        <p class="section-label" id="story-heading">User Story</p>
+        <blockquote class="story-block">
+          <span class="quote-mark">"</span>
+          As a doctor, I want to set my availability so that patients can book appointments at suitable times.
+          <span class="quote-mark">"</span>
+        </blockquote>
+      </section>
+
+      <div class="card__divider"></div>
+
+      <!-- ── ACCEPTANCE CRITERIA ── -->
+      <section class="card__section" aria-labelledby="criteria-heading">
+        <p class="section-label" id="criteria-heading">Acceptance Criteria</p>
+        <ul class="criteria-list" role="list">
+          <li class="criteria-item">
+            <span class="criteria-icon criteria-icon--green">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+            Doctor can add available days and time slots
+          </li>
+          <li class="criteria-item">
+            <span class="criteria-icon criteria-icon--green">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+            Doctor can update or remove availability
+          </li>
+          <li class="criteria-item">
+            <span class="criteria-icon criteria-icon--green">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
+            Only available slots are visible to patients
+          </li>
+        </ul>
+      </section>
+
+      <div class="card__divider"></div>
+
+      <!-- ── ADD SLOT FORM (hidden by default) ── -->
+      <section id="add-slot-form" class="card__section form-section hidden" aria-labelledby="form-heading">
+        <p class="section-label" id="form-heading">Add New Time Slot</p>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="slot-day" class="form-label">Day</label>
+            <select id="slot-day" class="form-input form-select" aria-required="true">
+              <option value="">— Select Day —</option>
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="slot-start" class="form-label">Start Time</label>
+            <input type="time" id="slot-start" class="form-input" aria-required="true" />
+          </div>
+          <div class="form-field">
+            <label for="slot-end" class="form-label">End Time</label>
+            <input type="time" id="slot-end" class="form-input" aria-required="true" />
+          </div>
+        </div>
+
+        <!-- ⚠️ INTENTIONAL BUG #1 (UI):
+             The "Save Slot" button below has an extra inline margin-top that
+             misaligns it from the form grid row by 18px instead of the standard 0.
+             This causes a subtle vertical gap/misalignment in the form section. -->
+        <div class="form-actions" style="margin-top: 18px; padding-top: 6px;">
+          <button id="btn-save-slot" class="btn btn--primary" aria-label="Save time slot">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Save Slot
+          </button>
+          <button id="btn-cancel-form" class="btn btn--ghost" aria-label="Cancel adding slot">Cancel</button>
+        </div>
+
+        <!-- Inline validation message -->
+        <p id="form-error" class="form-error hidden" role="alert"></p>
+      </section>
+
+      <!-- ── AVAILABILITY TABLE ── -->
+      <section class="card__section" aria-labelledby="slots-heading">
+        <div class="slots-header">
+          <p class="section-label" id="slots-heading">Scheduled Availability</p>
+          <span id="slot-count" class="slot-count-badge">0 slots</span>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </div>
+          <p class="empty-title">No availability set yet</p>
+          <p class="empty-sub">Click the <strong>+</strong> button above to add your first time slot.</p>
+        </div>
+
+        <!-- Slots list (populated by JS) -->
+        <ul id="slots-list" class="slots-list hidden" role="list" aria-label="Availability slots"></ul>
+      </section>
+
+      <!-- ── FILTER PANEL (hidden by default) ── -->
+      <aside id="filter-panel" class="filter-panel hidden" aria-label="Filter panel">
+        <p class="section-label">Filter by Day</p>
+        <div class="filter-chips" id="filter-chips">
+          <button class="chip chip--active" data-day="All">All</button>
+          <button class="chip" data-day="Monday">Mon</button>
+          <button class="chip" data-day="Tuesday">Tue</button>
+          <button class="chip" data-day="Wednesday">Wed</button>
+          <button class="chip" data-day="Thursday">Thu</button>
+          <button class="chip" data-day="Friday">Fri</button>
+          <button class="chip" data-day="Saturday">Sat</button>
+          <button class="chip" data-day="Sunday">Sun</button>
+        </div>
+      </aside>
+
+    </main><!-- /card -->
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  </div><!-- /page-bg -->
+
+  <!-- Main Script -->
+  <script src="script.js"></script>
+</body>
+
+</html>
