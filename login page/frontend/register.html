@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | MediCare Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .register-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .role-switch {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .role-btn.active {
+            background: var(--blue-500);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .step { display: none; }
+        .step.active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hidden { display: none; }
+        .form-section-title { margin-bottom: 20px; color: var(--blue-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Live Validation Styles */
+        .error-text {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            height: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: block;
+        }
+        .error-text.visible {
+            opacity: 1;
+        }
+        .field-wrap.invalid {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        .field-wrap.valid {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+    </style>
+</head>
+<body data-role="doctor">
+    <div class="register-container">
+        <div class="form-header" style="text-align: center; margin-bottom: 30px;">
+            <div class="logo" style="justify-content: center; margin-bottom: 20px;">
+                <div class="logo-icon"><i data-lucide="heart-pulse"></i></div>
+                <span class="logo-text">MediCare Pro</span>
+            </div>
+            <h1>Create Account</h1>
+            <p class="form-subtitle">Join our smart healthcare network</p>
+        </div>
+
+        <div class="role-switch">
+            <button type="button" class="role-btn active" data-role="doctor" onclick="setRole('doctor')">Doctor</button>
+            <button type="button" class="role-btn" data-role="patient" onclick="setRole('patient')">Patient</button>
+        </div>
+
+        <form id="registerForm" novalidate>
+            <!-- Common Fields -->
+            <div class="field-group">
+                <label for="fullName">Full Name</label>
+                <div class="field-wrap">
+                    <i data-lucide="user" class="field-icon"></i>
+                    <input type="text" id="fullName" name="fullName" placeholder="e.g. John Doe" required>
+                </div>
+                <span class="error-text" id="fullName-error">Full name must be at least 3 characters.</span>
+            </div>
+
+            <div class="field-group">
+                <label for="email">Email Address</label>
+                <div class="field-wrap">
+                    <i data-lucide="mail" class="field-icon"></i>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <span class="error-text" id="email-error">Please enter a valid email address.</span>
+            </div>
+
+            <div class="field-group">
+                <label for="password">Password</label>
+                <div class="field-wrap">
+                    <i data-lucide="lock" class="field-icon"></i>
+                    <input type="password" id="password" name="password" placeholder="Min 8 characters" required>
+                </div>
+                <span class="error-text" id="password-error">Password must be at least 8 characters.</span>
+            </div>
+
+            <!-- Doctor Specific Fields -->
+            <div id="doctorFields">
+                <div class="form-section-title">Medical Credentials</div>
+                <div class="field-group">
+                    <label for="specialization">Specialization</label>
+                    <div class="field-wrap">
+                        <i data-lucide="stethoscope" class="field-icon"></i>
+                        <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiology">
+                    </div>
+                    <span class="error-text" id="specialization-error">Specialization is required.</span>
+                </div>
+                <div class="field-group">
+                    <label for="licenseNumber">License Number</label>
+                    <div class="field-wrap">
+                        <i data-lucide="id-card" class="field-icon"></i>
+                        <input type="text" id="licenseNumber" name="licenseNumber" placeholder="e.g. MED-123456">
+                    </div>
+                    <span class="error-text" id="licenseNumber-error">Enter a valid license number (min 3 chars).</span>
+                </div>
+                <div class="field-group">
+                    <label for="experience">Years of Experience</label>
+                    <div class="field-wrap">
+                        <i data-lucide="clock" class="field-icon"></i>
+                        <input type="number" id="experience" name="experience" placeholder="e.g. 10">
+                    </div>
+                    <span class="error-text" id="experience-error">Enter valid years (0-60).</span>
+                </div>
+                <div class="field-group">
+                    <label for="hospital">Hospital / Clinic</label>
+                    <div class="field-wrap">
+                        <i data-lucide="building" class="field-icon"></i>
+                        <input type="text" id="hospital" name="hospital" placeholder="e.g. City General Hospital">
+                    </div>
+                    <span class="error-text" id="hospital-error">Hospital / Clinic name is required (min 3 chars).</span>
+                </div>
+                <div class="field-group">
+                    <label for="bio">Short Bio</label>
+                    <div class="field-wrap">
+                        <textarea id="bio" name="bio" placeholder="Tell us about your medical background..." style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); background: #fff; min-height: 100px; outline: none; transition: all 0.2s; font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span class="error-text" id="bio-error" style="margin-top: 0;">Bio must be at least 10 characters.</span>
+                        <span id="bioCounter" style="font-size: 11px; color: var(--text-soft);">0 / 500</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Specific Fields -->
+            <div id="patientFields" class="hidden">
+                <div class="form-section-title">Personal Details</div>
+                <div class="field-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="field-wrap">
+                        <i data-lucide="phone" class="field-icon"></i>
+                        <input type="tel" id="phone" name="phone" placeholder="e.g. 9876543210">
+                    </div>
+                    <span class="error-text" id="phone-error">Enter a valid 10-digit phone number.</span>
+                </div>
+                <div class="field-group">
+                    <label for="age">Age</label>
+                    <div class="field-wrap">
+                        <i data-lucide="calculator" class="field-icon"></i>
+                        <input type="number" id="age" name="age" placeholder="e.g. 25">
+                    </div>
+                    <span class="error-text" id="age-error">Enter a valid age (1-120).</span>
+                </div>
+            </div>
+
+            <div id="messageBox" class="message-box" style="display:none; margin-bottom: 20px;"></div>
+
+            <button type="submit" class="login-btn" id="regButton" disabled>
+                <span id="btnText">Complete Registration</span>
+                <i data-lucide="check-circle" id="btnIcon"></i>
+            </button>
+        </form>
+
+        <p class="signup-row" style="margin-top: 30px;">
+            Already have an account?
+            <a href="index.html" class="link-btn">Sign In</a>
+        </p>
+    </div>
+
+    <script>
+        let currentRole = 'doctor';
+        
+        function resolveApiUrl() {
+            const relativeUrl = '../backend/register.php';
+            const isDefaultHttpPort = window.location.protocol.startsWith('http') &&
+                (window.location.port === '' || window.location.port === '80' || window.location.port === '443');
+
+            if (!isDefaultHttpPort) {
+                // Route to Apache (XAMPP) if serving from a static dev server like Live Server
+                return 'http://localhost/Online-Doctor-Appointment/login%20page/backend/register.php';
+            }
+            return relativeUrl;
+        }
+
+        const API_URL = resolveApiUrl();
+
+        function setRole(role) {
+            currentRole = role;
+            document.body.setAttribute('data-role', role);
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-role') === role);
+            });
+            
+            document.getElementById('doctorFields').classList.toggle('hidden', role !== 'doctor');
+            document.getElementById('patientFields').classList.toggle('hidden', role !== 'patient');
+            
+            // Re-validate everything when switching roles
+            validateAll();
+        }
+
+        const registerForm = document.getElementById('registerForm');
+        const regButton = document.getElementById('regButton');
+        const btnText = document.getElementById('btnText');
+        const messageBox = document.getElementById('messageBox');
+
+        // Validation Rules
+        const validators = {
+            fullName: (v) => v.length >= 3 && /^[a-zA-Z\s]+$/.test(v),
+            email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+            password: (v) => v.length >= 8,
+            specialization: (v) => currentRole !== 'doctor' || v.length >= 3,
+            licenseNumber: (v) => currentRole !== 'doctor' || v.length >= 3,
+            experience: (v) => currentRole !== 'doctor' || (v !== '' && v >= 0 && v <= 60),
+            hospital: (v) => currentRole !== 'doctor' || v.length >= 3,
+            bio: (v) => currentRole !== 'doctor' || v.length >= 10,
+            phone: (v) => currentRole !== 'patient' || /^\d{10}$/.test(v),
+            age: (v) => currentRole !== 'patient' || (v !== '' && v >= 1 && v <= 120)
+        };
+
+        function validateField(input) {
+            const id = input.id;
+            const validator = validators[id];
+            if (!validator) return true;
+
+            const isValid = validator(input.value.trim());
+            const errorSpan = document.getElementById(`${id}-error`);
+            const fieldWrap = input.closest('.field-wrap');
+
+            if (isValid) {
+                errorSpan.classList.remove('visible');
+                fieldWrap.classList.remove('invalid');
+                fieldWrap.classList.add('valid');
+                return true;
+            } else {
+                // Only show errors if user has typed something or attempted submit
+                if (input.value.length > 0) {
+                    errorSpan.classList.add('visible');
+                    fieldWrap.classList.add('invalid');
+                    fieldWrap.classList.remove('valid');
+                } else {
+                    errorSpan.classList.remove('visible');
+                    fieldWrap.classList.remove('invalid', 'valid');
+                }
+                return false;
+            }
+        }
+
+        function validateAll() {
+            let formValid = true;
+            const inputs = registerForm.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                const isRelevant = !input.closest('.hidden');
+                if (isRelevant) {
+                    if (!validateField(input)) formValid = false;
+                }
+            });
+            regButton.disabled = !formValid;
+        }
+
+        // Attach listeners
+        registerForm.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', validateAll);
+            input.addEventListener('blur', () => validateField(input));
+        });
+
+        // Bio character counter
+        const bioTextarea = document.getElementById('bio');
+        const bioCounter = document.getElementById('bioCounter');
+        if (bioTextarea && bioCounter) {
+            bioTextarea.addEventListener('input', () => {
+                bioCounter.textContent = `${bioTextarea.value.length} / 500`;
+                if (bioTextarea.value.length > 500) {
+                    bioCounter.style.color = '#ef4444';
+                } else {
+                    bioCounter.style.color = 'var(--text-soft)';
+                }
+            });
+        }
+
+        // Automatically detect role from URL parameter
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const role = urlParams.get('role');
+            if (role === 'doctor' || role === 'patient') {
+                setRole(role);
+                const switcher = document.querySelector('.role-switch');
+                if (switcher) switcher.style.display = 'none';
+                
+                const subtitle = document.querySelector('.form-subtitle');
+                if (subtitle) subtitle.textContent = `Register as a ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            
+            const formData = new FormData(registerForm);
+            const data = Object.fromEntries(formData.entries());
+            data.role = currentRole;
+
+            regButton.disabled = true;
+            btnText.textContent = 'Processing...';
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    if (currentRole === 'patient') {
+                        setTimeout(() => window.location.href = 'index.html', 2500);
+                    }
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (err) {
+                showMessage('Connection error. Please try again.', 'error');
+            } finally {
+                regButton.disabled = false;
+                btnText.textContent = 'Complete Registration';
+            }
+        });
+
+        function showMessage(text, type) {
+            messageBox.textContent = text;
+            messageBox.className = 'message-box ' + type;
+            messageBox.style.display = 'block';
+        }
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

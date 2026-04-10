@@ -37,6 +37,7 @@ const loginButton       = document.getElementById('loginButton');
 const btnText           = document.getElementById('btnText');
 const messageBox        = document.getElementById('messageBox');
 const clockDisplay      = document.getElementById('clockDisplay');
+const signupRow         = document.querySelector('.signup-row');
 
 // ── Live Clock ───────────────────────────────────────────────────────────────────
 function updateClock() {
@@ -57,6 +58,60 @@ function init() {
     loginForm.addEventListener('submit', handleLogin);
     togglePasswordBtn.addEventListener('click', handlePasswordToggle);
     updateRoleHeader(currentRole);
+
+    // Live validation listeners
+    const inputs = loginForm.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            validateField(input);
+            checkFormValidity();
+        });
+        input.addEventListener('blur', () => {
+            validateField(input);
+        });
+    });
+}
+
+const validators = {
+    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    password: (v) => v.length > 0
+};
+
+function validateField(input) {
+    const id = input.id;
+    const validator = validators[id];
+    if (!validator) return true;
+
+    const isValid = validator(input.value.trim());
+    const errorSpan = document.getElementById(`${id}-error`);
+    const fieldWrap = input.closest('.field-wrap');
+
+    if (isValid) {
+        if (errorSpan) errorSpan.classList.remove('visible');
+        if (fieldWrap) {
+            fieldWrap.classList.remove('invalid');
+            fieldWrap.classList.add('valid');
+        }
+        return true;
+    } else {
+        if (input.value.length > 0) {
+            if (errorSpan) errorSpan.classList.add('visible');
+            if (fieldWrap) {
+                fieldWrap.classList.add('invalid');
+                fieldWrap.classList.remove('valid');
+            }
+        } else {
+            if (errorSpan) errorSpan.classList.remove('visible');
+            if (fieldWrap) fieldWrap.classList.remove('invalid', 'valid');
+        }
+        return false;
+    }
+}
+
+function checkFormValidity() {
+    const inputs = [...loginForm.querySelectorAll('input[required]')];
+    const allValid = inputs.every(input => validators[input.id](input.value.trim()));
+    loginButton.disabled = !allValid;
 }
 
 function updateRoleHeader(role) {
@@ -65,6 +120,11 @@ function updateRoleHeader(role) {
 
     roleIconWrap.innerHTML = `<i data-lucide="${cfg.icon}"></i>`;
     formTitle.textContent = cfg.title;
+
+    // Toggle registration link visibility for admin
+    if (signupRow) {
+        signupRow.style.display = (role === 'admin') ? 'none' : 'block';
+    }
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -136,6 +196,10 @@ async function handleLogin(e) {
 
         if (data.success) {
             showMessage(data.message, 'success');
+            // Store user info for dashboard access
+            if (data.user) {
+                localStorage.setItem('medicare_user', JSON.stringify(data.user));
+            }
             // Redirect to dashboard after 1.5 s
             setTimeout(() => { 
                 if (currentRole === 'patient') {
@@ -159,10 +223,8 @@ async function handleLogin(e) {
 // ── Signup Link Handling ────────────────────────────────────────────────────────
 function handleSignupRedirect(e) {
     e.preventDefault();
-    if (currentRole === 'patient') {
-        window.location.href = '../../Patient/frontend/index.html';
-    } else if (currentRole === 'doctor') {
-        window.location.href = '../../Reg&Login/index.html';
+    if (currentRole === 'patient' || currentRole === 'doctor') {
+        window.location.href = `register.html?role=${currentRole}`;
     } else {
         showMessage('Signup is only available for Doctors and Patients.', 'error');
     }

@@ -268,3 +268,29 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* Validation Styles */
+.error-text {
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: none;
+}
+.error-text.visible {
+  display: block;
+}
+input.invalid {
+  border-color: var(--red) !important;
+  background-color: var(--red-soft) !important;
+}
+input.valid {
+  border-color: var(--green) !important;
+  background-color: var(--green-soft) !important;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.hidden {
+    display: none !important;
+}

@@ -39,13 +39,27 @@ try {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
+        // Check account status
+        if ($user['status'] === 'pending') {
+            http_response_code(403);
+            echo json_encode(["success" => false, "message" => "Your account is pending admin approval. Please check back later."]);
+            exit;
+        }
+
+        if ($user['status'] === 'rejected') {
+            http_response_code(403);
+            echo json_encode(["success" => false, "message" => "Your account registration has been rejected. Contact support for details."]);
+            exit;
+        }
+
         echo json_encode([
             "success" => true,
             "message" => "Login successful! Redirecting to {$role} dashboard...",
             "user" => [
                 "id"    => $user['id'],
                 "email" => $user['email'],
-                "role"  => $user['role']
+                "role"  => $user['role'],
+                "status" => $user['status']
             ]
         ]);
     } else {

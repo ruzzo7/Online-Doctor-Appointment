@@ -50,14 +50,34 @@
   <main>
     <!-- Profile Section -->
     <section id="profile" class="card hidden">
-      <h2>Profile Overview</h2>
-      <div class="doctor-card__details">
-        <div class="detail-pill"><strong>Full Name:</strong> Nikesh Gautam</div>
-        <div class="detail-pill"><strong>Age:</strong> 20</div>
-        <div class="detail-pill"><strong>Email:</strong> Nikesh@gmail.com</div>
-        <div class="detail-pill"><strong>Contact No:</strong> +91 9812345678</div>
-      </div>
-      <button class="btn" style="margin-top: 24px;">Edit My Details</button>
+      <h2>Profile Settings</h2>
+      <form id="profileForm" novalidate>
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="fullName" value="Nikesh Gautam" required>
+          <span class="error-text" id="fullName-error">Full name must be at least 3 characters.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="age">Age</label>
+          <input type="number" id="age" name="age" value="20" required>
+          <span class="error-text" id="age-error">Enter a valid age (1-120).</span>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" value="Nikesh@gmail.com" required disabled>
+          <span class="error-text" id="email-error">Invalid email address.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" value="9812345678" required>
+          <span class="error-text" id="phone-error">Enter a valid 10-digit phone number.</span>
+        </div>
+
+        <button type="submit" class="btn" id="saveProfileBtn">Save My Details</button>
+      </form>
     </section>
 
     <!-- Doctors Section -->

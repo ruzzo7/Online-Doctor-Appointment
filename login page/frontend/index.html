@@ -143,6 +143,7 @@
                             <input type="email" id="email" name="email"
                                    placeholder="you@hospital.com" required>
                         </div>
+                        <span class="error-text" id="email-error">Please enter a valid hospital email address.</span>
                     </div>
 
                     <div class="field-group">
@@ -158,13 +159,14 @@
                                 <i data-lucide="eye" id="eyeIcon"></i>
                             </button>
                         </div>
+                        <span class="error-text" id="password-error">Password is required.</span>
                     </div>
 
                     <!-- Message Box -->
                     <div id="messageBox" class="message-box" style="display:none;"></div>
 
                     <!-- Submit -->
-                    <button type="submit" class="login-btn" id="loginButton">
+                    <button type="submit" class="login-btn" id="loginButton" disabled>
                         <span id="btnText">Sign In</span>
                         <i data-lucide="arrow-right" id="btnIcon"></i>
                     </button>

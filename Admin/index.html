@@ -64,6 +64,24 @@
                         <a href="#" class="btn btn-secondary">Open Patients</a>
                     </article>
                 </div>
+
+                <div class="section-title" style="margin-top: 40px;">
+                    <h3>Admin Settings</h3>
+                    <p>Update your administrative contact details.</p>
+                </div>
+                <form id="adminSettingsForm" novalidate style="margin-top: 20px; display: grid; gap: 15px;">
+                    <div class="field-item">
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569;">Admin Email</label>
+                        <input type="email" id="adminEmail" name="adminEmail" value="admin@medicare.pro" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none;" required>
+                        <span class="error-text" id="adminEmail-error">Invalid admin email format.</span>
+                    </div>
+                    <div class="field-item">
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569;">Emergency Contact</label>
+                        <input type="tel" id="adminPhone" name="adminPhone" value="9812345678" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none;" required>
+                        <span class="error-text" id="adminPhone-error">Must be 10 digits.</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="saveAdminBtn" style="width: fit-content;">Save Settings</button>
+                </form>
             </section>
 
             <section class="panel">
