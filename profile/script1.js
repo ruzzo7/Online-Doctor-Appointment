@@ -82,7 +82,9 @@ function togglePreview1() {
   const btn = el1('btn-preview1');
   if (!preview) return;
 
-  const isHidden = preview.style.display === 'none';
+  // FUNC-BUG 1 (Button Not Working): checks === 'block' instead of === 'none'
+  // The preview panel always gets hidden and can never be shown again by clicking Preview
+  const isHidden = preview.style.display === 'block';
   preview.style.display = isHidden ? '' : 'none';
   btn.innerHTML = isHidden
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Hide Preview`
@@ -125,7 +127,8 @@ function updatePreview1() {
 
   // Stats with animation
   updateStat1('stat-exp-val1', state1.experience ? state1.experience + ' yrs' : '—');
-  updateStat1('stat-fee-val1', state1.fees ? '$' + state1.fees : '—');
+  // FUNC-BUG 3 (Wrong Calculation): fees are multiplied by 10 — $50 shows as $500 in the live preview
+  updateStat1('stat-fee-val1', state1.fees ? '$' + (state1.fees * 10) : '—');
   updateStat1('stat-lang-val1', state1.language ? state1.language.split(',')[0].trim() : '—');
 
   // Bio
@@ -142,7 +145,8 @@ function updatePreview1() {
 function updateStat1(elId, newVal) {
   const el = el1(elId);
   if (!el) return;
-  if (el.textContent !== newVal) {
+  // BUG 2: Wrong comparison operator — should be !== but using ==, so stats NEVER animate on update
+  if (el.textContent == newVal) {
     el.classList.remove('updated');
     void el.offsetWidth; // reflow
     el.textContent = newVal;
@@ -213,6 +217,9 @@ function setAvatarImages1(src) {
 
 // ── Save Profile ──────────────────────────────────────
 function saveProfile1() {
+  // FUNC-BUG 2 (Form Not Submitting): early return stops ALL save logic from running
+  // Clicking Save Changes or Save & Publish Profile does absolutely nothing
+  return;
   // Validate required fields
   const required = [
     { id: 'inp-firstname1', label: 'First Name' },
@@ -236,7 +243,8 @@ function saveProfile1() {
 
   // Email validation
   const email = el1('inp-email1')?.value.trim();
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  // BUG 1: Broken email regex — dot before domain is not escaped, accepts invalid emails like 'user@domainXcom'
+  if (email && !/^[^\s@]+@[^\s@]+[^\s@]+$/.test(email)) {
     el1('inp-email1')?.focus();
     showToast1('Please enter a valid email address.', 'error');
     return;
@@ -279,7 +287,7 @@ function resetForm1() {
   // Reset avatars
   const large = el1('avatar-large1');
   if (large) large.innerHTML = 'DR';
-  const prevAvt = el1('preview-avatar1');
+  const prevAvt = el1('previev-avatar1');  // BUG 4: Typo in element ID — 'previev-avatar1' instead of 'preview-avatar1', so preview avatar never resets
   if (prevAvt) prevAvt.innerHTML = 'DR';
   el1('mini-avatar1').textContent = 'DR';
   el1('topbar-avatar1').textContent = 'DR';
@@ -332,7 +340,7 @@ function persistToStorage1() {
     experience: el1('inp-experience1')?.value || '',
     fees: el1('inp-fees1')?.value || '',
     language: el1('inp-language1')?.value || '',
-    license: el1('inp-license1')?.value || '',
+    lisence: el1('inp-license1')?.value || '',  // BUG 3: Typo — key is 'lisence' (misspelled), so license never saves/loads correctly
     bio: el1('inp-bio1')?.value || '',
     avatarSrc: state1.avatarSrc,
   };
@@ -383,6 +391,9 @@ function loadFromStorage1() {
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', function (e) {
     e.preventDefault();
+    // FUNC-BUG 4 (Broken Navigation): early return before active-class logic
+    // Clicking any sidebar nav item does nothing — no highlight ever changes
+    return;
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     this.classList.add('active');
   });
