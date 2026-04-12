@@ -323,8 +323,7 @@ body::before {
 }
 
 .page-title {
-  /* BUG 1 (CSS): font-size too large — should be 1.75rem but set to 4rem, breaking layout on all screen sizes */
-  font-size: 4rem;
+  font-size: 1.75rem;
   font-weight: 800;
   background: linear-gradient(135deg, var(--blue-200), var(--blue-400));
   -webkit-background-clip: text;
@@ -501,8 +500,7 @@ body::before {
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
-  /* BUG 3 (CSS): gap is 200px instead of 28px — causes a huge empty space between the form and preview panels */
-  gap: 200px;
+  gap: 28px;
   align-items: start;
 }
 
@@ -671,8 +669,7 @@ body::before {
 /* Form Actions */
 .form-actions {
   display: flex;
-  /* BUG 2 (CSS): justify-content is 'center' instead of 'flex-end' — Save/Reset buttons are centred, not right-aligned */
-  justify-content: center;
+  justify-content: flex-end;
   gap: 14px;
   padding-top: 4px;
 }
@@ -962,8 +959,7 @@ body::before {
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
   .sidebar {
-    /* BUG 4 (CSS): translateX(0) instead of translateX(-240px) — sidebar is ALWAYS visible on mobile, overlapping content */
-    transform: translateX(0);
+    transform: translateX(-240px);
     width: 240px;
   }
   .sidebar.open  { transform: translateX(0); }

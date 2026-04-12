@@ -12,19 +12,36 @@ const AppState = {
   totalSteps: 3,
 };
 
-/* ============ Registered accounts (simulated DB in sessionStorage) ============ */
+/* ============ Registered accounts (simulated DB in localStorage — persists across page navigations) ============ */
 function getAccounts() {
   try {
-    return JSON.parse(sessionStorage.getItem('mc_accounts') || '[]');
+    return JSON.parse(localStorage.getItem('mc_accounts') || '[]');
   } catch { return []; }
 }
+
+async function hashPassword(rawPassword) {
+  const enc = new TextEncoder().encode(rawPassword);
+
+  // Use Web Crypto when available (modern browsers).
+  if (window.crypto && window.crypto.subtle) {
+    const digest = await window.crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(digest))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  // Minimal fallback to avoid storing plain text if SubtleCrypto is unavailable.
+  return btoa(rawPassword);
+}
+
 function saveAccount(account) {
   const accounts = getAccounts();
   accounts.push(account);
-  sessionStorage.setItem('mc_accounts', JSON.stringify(accounts));
+  localStorage.setItem('mc_accounts', JSON.stringify(accounts));
 }
 function findAccount(email) {
-  return getAccounts().find(a => a.email.toLowerCase() === email.toLowerCase());
+  const target = email.trim().toLowerCase();
+  return getAccounts().find(a => typeof a?.email === 'string' && a.email.toLowerCase() === target);
 }
 
 /* ============ Tab Switching ============ */
@@ -60,9 +77,7 @@ function switchTab(tab) {
 function togglePassword(inputId, btn) {
   const input = document.getElementById(inputId);
   const icon  = btn.querySelector('i');
-  // FUNC-BUG 5 (Button Not Working): checks for 'text' instead of 'password'
-  // The toggle is inverted — clicking on a password field does nothing; it only toggles when already visible
-  if (input.type === 'text') {
+  if (input.type === 'password') {
     input.type = 'text';
     icon.className = 'fa-solid fa-eye-slash';
     btn.setAttribute('aria-label', 'Hide password');
@@ -101,15 +116,13 @@ function checkPasswordStrength(value) {
   const label = document.getElementById('pwStrengthLabel');
   if (!fill || !label) return;
 
-  // FUNC-BUG 7 (Wrong Calculation): score index is always forced to 1 (Weak)
-  // No matter how strong the password is, the strength bar always shows 'Weak'
   const cfg = [
     { w: '0%',   color: '',           text: '' },
     { w: '25%',  color: '#ef4444',    text: 'Weak' },
     { w: '50%',  color: '#f59e0b',    text: 'Fair' },
     { w: '75%',  color: '#3b82f6',    text: 'Good' },
     { w: '100%', color: '#10b981',    text: 'Strong' },
-  ][Math.min(score, 1)];  // BUG: Math.min caps at 1, so max is always 'Weak'
+  ][score];
 
   fill.style.width      = cfg.w;
   fill.style.background = cfg.color;
@@ -244,8 +257,17 @@ function attachLiveValidation() {
 }
 
 /* ============ Multi-step Registration ============ */
+function setActiveRegisterStep(stepNumber) {
+  document.querySelectorAll('.reg-step').forEach((stepEl) => {
+    stepEl.classList.toggle('active', stepEl.id === `step-${stepNumber}`);
+  });
+  AppState.currentStep = stepNumber;
+  updateProgressUI();
+}
+
 function validateStep(step) {
   let valid = true;
+  let firstInvalid = null;
 
   if (step === 1) {
     const fname = document.getElementById('reg-fname');
@@ -255,23 +277,23 @@ function validateStep(step) {
     const gender = document.getElementById('reg-gender');
 
     if (!fname.value.trim() || fname.value.trim().length < 2) {
-      showError(fname, document.getElementById('fname-err'), 'First name is required (min 2 chars)'); valid = false;
+      showError(fname, document.getElementById('fname-err'), 'First name is required (min 2 chars)'); valid = false; if (!firstInvalid) firstInvalid = fname;
     } else showValid(fname, document.getElementById('fname-err'));
 
     if (!lname.value.trim() || lname.value.trim().length < 2) {
-      showError(lname, document.getElementById('lname-err'), 'Last name is required (min 2 chars)'); valid = false;
+      showError(lname, document.getElementById('lname-err'), 'Last name is required (min 2 chars)'); valid = false; if (!firstInvalid) firstInvalid = lname;
     } else showValid(lname, document.getElementById('lname-err'));
 
     if (!emailRegex.test(email.value.trim())) {
-      showError(email, document.getElementById('reg-email-err'), 'Valid email is required'); valid = false;
+      showError(email, document.getElementById('reg-email-err'), 'Valid email is required'); valid = false; if (!firstInvalid) firstInvalid = email;
     } else showValid(email, document.getElementById('reg-email-err'));
 
     if (!phoneRegex.test(phone.value.trim())) {
-      showError(phone, document.getElementById('phone-err'), 'Valid phone number is required'); valid = false;
+      showError(phone, document.getElementById('phone-err'), 'Valid phone number is required'); valid = false; if (!firstInvalid) firstInvalid = phone;
     } else showValid(phone, document.getElementById('phone-err'));
 
     if (!gender.value) {
-      showError(gender, document.getElementById('gender-err'), 'Please select gender'); valid = false;
+      showError(gender, document.getElementById('gender-err'), 'Please select gender'); valid = false; if (!firstInvalid) firstInvalid = gender;
     } else showValid(gender, document.getElementById('gender-err'));
   }
 
@@ -281,32 +303,34 @@ function validateStep(step) {
     const exp     = document.getElementById('reg-exp');
     const hospital= document.getElementById('reg-hospital');
     const degree  = document.getElementById('reg-degree');
-    const cert    = document.getElementById('reg-cert');
 
     if (!spec.value) {
-      showError(spec, document.getElementById('spec-err'), 'Please select a specialization'); valid = false;
+      showError(spec, document.getElementById('spec-err'), 'Please select a specialization'); valid = false; if (!firstInvalid) firstInvalid = spec;
     } else showValid(spec, document.getElementById('spec-err'));
 
     if (!license.value.trim() || license.value.trim().length < 4) {
-      showError(license, document.getElementById('license-err'), 'Valid license number is required'); valid = false;
+      showError(license, document.getElementById('license-err'), 'Valid license number is required'); valid = false; if (!firstInvalid) firstInvalid = license;
     } else showValid(license, document.getElementById('license-err'));
 
     const expV = parseInt(exp.value);
     if (isNaN(expV) || expV < 0 || expV > 60) {
-      showError(exp, document.getElementById('exp-err'), 'Enter valid years of experience'); valid = false;
+      showError(exp, document.getElementById('exp-err'), 'Enter valid years of experience'); valid = false; if (!firstInvalid) firstInvalid = exp;
     } else showValid(exp, document.getElementById('exp-err'));
 
     if (!hospital.value.trim() || hospital.value.trim().length < 3) {
-      showError(hospital, document.getElementById('hospital-err'), 'Hospital / clinic name is required'); valid = false;
+      showError(hospital, document.getElementById('hospital-err'), 'Hospital / clinic name is required'); valid = false; if (!firstInvalid) firstInvalid = hospital;
     } else showValid(hospital, document.getElementById('hospital-err'));
 
     if (!degree.value) {
-      showError(degree, document.getElementById('degree-err'), 'Please select your degree'); valid = false;
+      showError(degree, document.getElementById('degree-err'), 'Please select your degree'); valid = false; if (!firstInvalid) firstInvalid = degree;
     } else showValid(degree, document.getElementById('degree-err'));
 
-    if (!cert.files || !cert.files[0]) {
-      showError(cert, document.getElementById('cert-err'), 'Please upload your medical certificate'); valid = false;
-    } else clearState(cert, document.getElementById('cert-err'));
+    // Certificate is optional in this client-side flow.
+    const certErr = document.getElementById('cert-err');
+    if (certErr) {
+      certErr.textContent = '';
+      certErr.classList.remove('show');
+    }
   }
 
   if (step === 3) {
@@ -322,11 +346,11 @@ function validateStep(step) {
       special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwVal),
     };
     if (!Object.values(pwRules).every(Boolean)) {
-      showError(pw, document.getElementById('reg-pass-err'), 'Password does not meet all requirements'); valid = false;
+      showError(pw, document.getElementById('reg-pass-err'), 'Password does not meet all requirements'); valid = false; if (!firstInvalid) firstInvalid = pw;
     } else showValid(pw, document.getElementById('reg-pass-err'));
 
     if (confirm.value !== pwVal) {
-      showError(confirm, document.getElementById('confirm-err'), 'Passwords do not match'); valid = false;
+      showError(confirm, document.getElementById('confirm-err'), 'Passwords do not match'); valid = false; if (!firstInvalid) firstInvalid = confirm;
     } else showValid(confirm, document.getElementById('confirm-err'));
 
     if (!terms.checked) {
@@ -334,11 +358,16 @@ function validateStep(step) {
       termsErr.textContent = '⚠ You must agree to the Terms of Service';
       termsErr.classList.add('show');
       valid = false;
+      if (!firstInvalid) firstInvalid = terms;
     } else {
       const termsErr = document.getElementById('terms-err');
       termsErr.textContent = '';
       termsErr.classList.remove('show');
     }
+  }
+
+  if (!valid && firstInvalid && typeof firstInvalid.focus === 'function') {
+    firstInvalid.focus();
   }
 
   return valid;
@@ -350,15 +379,10 @@ function nextStep(current) {
     return;
   }
   const currentEl = document.getElementById(`step-${current}`);
-  // FUNC-BUG 8 (Broken Navigation): uses step-${current} instead of step-${current + 1}
-  // Clicking 'Continue' always tries to show the SAME step — the form never advances
-  const nextEl    = document.getElementById(`step-${current}`);
-  if (!nextEl) return;
+  const nextEl    = document.getElementById(`step-${current + 1}`);
+  if (!currentEl || !nextEl) return;
 
-  currentEl.classList.remove('active');
-  nextEl.classList.add('active');
-  AppState.currentStep = current + 1;
-  updateProgressUI();
+  setActiveRegisterStep(current + 1);
 
   // Scroll to top of form
   document.getElementById('panel-register').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -369,10 +393,7 @@ function prevStep(current) {
   const prevEl    = document.getElementById(`step-${current - 1}`);
   if (!prevEl) return;
 
-  currentEl.classList.remove('active');
-  prevEl.classList.add('active');
-  AppState.currentStep = current - 1;
-  updateProgressUI();
+  setActiveRegisterStep(current - 1);
 }
 
 function updateProgressUI() {
@@ -450,23 +471,42 @@ function initFileDrop(dropId, inputId, previewId, type) {
   });
 }
 
-/* ============ Login Form Submit ============ */
+/* ============ Form Submit Handlers ============ */
 document.addEventListener('DOMContentLoaded', () => {
   attachLiveValidation();
   initFileDrop('photoDrop', 'reg-photo', 'photoPreview', 'image');
   initFileDrop('certDrop', 'reg-cert', 'certPreview', 'file');
 
-  /* Login */
+  // Bind step navigation buttons explicitly for reliable wizard behavior.
+  document.getElementById('btn-step1-continue')?.addEventListener('click', () => nextStep(1));
+  document.getElementById('btn-step2-back')?.addEventListener('click', () => prevStep(2));
+  document.getElementById('btn-step2-continue')?.addEventListener('click', () => nextStep(2));
+  document.getElementById('btn-step3-back')?.addEventListener('click', () => prevStep(3));
+
+  // Intercept ENTER key in the registration form so it advances wizard steps
+  // instead of triggering the final submit event (which caused silent failures
+  // on Steps 1 & 2 because step-3 validation would run on hidden fields).
+  const registerFormEl = document.getElementById('registerForm');
+  registerFormEl?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    // Allow ENTER only on textareas (multi-line) and the final submit button.
+    if (e.target.tagName === 'TEXTAREA') return;
+    if (e.target.id === 'registerSubmitBtn') return;
+    e.preventDefault();
+    const step = AppState.currentStep;
+    if (step < AppState.totalSteps) {
+      nextStep(step);
+    }
+  });
+
+  /* ---- Login ---- */
   const loginForm = document.getElementById('loginForm');
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // FUNC-BUG 6 (Form Not Submitting): early return stops all login logic
-    // Clicking 'Sign In' does nothing at all — no validation, no auth, no feedback
-    return;
     let valid = true;
 
-    const emailEl = document.getElementById('login-email');
-    const passEl  = document.getElementById('login-password');
+    const emailEl  = document.getElementById('login-email');
+    const passEl   = document.getElementById('login-password');
     const emailErr = document.getElementById('lg-email-err');
     const passErr  = document.getElementById('lg-pass-err');
 
@@ -485,15 +525,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!valid) { shakeForm('panel-login'); return; }
 
     // Simulated auth
-    const btn      = document.getElementById('loginSubmitBtn');
-    const btnText  = btn.querySelector('.btn-text');
+    const btn       = document.getElementById('loginSubmitBtn');
+    const btnText   = btn.querySelector('.btn-text');
     const btnLoader = btn.querySelector('.btn-loader');
 
     btn.disabled = true;
     btnText.classList.add('hidden');
     btnLoader.classList.remove('hidden');
 
-    await simulateDelay(1800);
+    await simulateDelay(1200);
 
     const account = findAccount(emailEl.value.trim());
 
@@ -502,18 +542,33 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLoader.classList.add('hidden');
 
     if (!account) {
-      showError(emailEl, emailErr, 'No account found with this email');
-      showValid(passEl, passErr);
+      showError(emailEl, emailErr, 'No account found with this email. Please register first.');
       shakeForm('panel-login');
       return;
     }
 
-    if (account.password !== passEl.value) {
-      showError(passEl, passErr, 'Invalid email or password');
+    const inputHash = await hashPassword(passEl.value);
+    const isLegacyMatch = account.password && account.password === passEl.value;
+    const isHashMatch   = account.passwordHash && account.passwordHash === inputHash;
+
+    if (!isLegacyMatch && !isHashMatch) {
+      showError(passEl, passErr, 'Incorrect password. Please try again.');
       shakeForm('panel-login');
       return;
     }
 
+    // Migrate legacy plain-text records to hashed storage on first login.
+    if (isLegacyMatch && !account.passwordHash) {
+      const accounts = getAccounts();
+      const idx = accounts.findIndex(a => a.email?.toLowerCase() === account.email?.toLowerCase());
+      if (idx !== -1) {
+        accounts[idx] = { ...accounts[idx], passwordHash: inputHash };
+        delete accounts[idx].password;
+        localStorage.setItem('mc_accounts', JSON.stringify(accounts));
+      }
+    }
+
+    // Show pending notice if admin hasn't approved the account yet.
     if (account.status === 'pending') {
       const notice = document.getElementById('pendingNotice');
       notice.classList.remove('hidden');
@@ -522,22 +577,27 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Success
+    // Successful login — redirect to dashboard.
     showValid(emailEl, emailErr);
     showValid(passEl, passErr);
     const successNotice = document.getElementById('loginSuccess');
     successNotice.classList.remove('hidden');
-    await simulateDelay(2000);
-    // In a real app: window.location.href = '/dashboard';
-    alert('✅ Redirecting to Doctor Dashboard... (Connect backend for real redirect)');
-    successNotice.classList.add('hidden');
+    await simulateDelay(1500);
+    window.location.href = '../Doctor/index.html';
   });
 
-  /* Register */
+  /* ---- Register ---- */
   const registerForm = document.getElementById('registerForm');
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!validateStep(3)) { shakeForm('step-3'); return; }
+
+    // Only run the submit handler when the user is on the final step.
+    // ENTER key is intercepted above and rerouted to nextStep(), so this
+    // block should only be reached from Step 3's submit button.
+    if (AppState.currentStep !== AppState.totalSteps) {
+      nextStep(AppState.currentStep);
+      return;
+    }
 
     const btn       = document.getElementById('registerSubmitBtn');
     const btnText   = btn.querySelector('.btn-text');
@@ -547,42 +607,88 @@ document.addEventListener('DOMContentLoaded', () => {
     btnText.classList.add('hidden');
     btnLoader.classList.remove('hidden');
 
-    await simulateDelay(2200);
+    try {
+      // Validate current step (step 3) before proceeding.
+      if (!validateStep(3)) {
+        shakeForm('step-3');
+        return;
+      }
 
-    const email = document.getElementById('reg-email').value.trim();
-    if (findAccount(email)) {
+      await simulateDelay(1800);
+
+      // Collect all field values NOW (before reset clears them).
+      const email        = document.getElementById('reg-email').value.trim();
+      const firstName    = document.getElementById('reg-fname').value.trim();
+      const lastName     = document.getElementById('reg-lname').value.trim();
+      const phoneCode    = document.getElementById('reg-phone-code').value;
+      const phone        = document.getElementById('reg-phone').value.trim();
+      const gender       = document.getElementById('reg-gender').value;
+      const specialization = document.getElementById('reg-spec').value;
+      const license      = document.getElementById('reg-license').value.trim();
+      const experience   = document.getElementById('reg-exp').value;
+      const hospital     = document.getElementById('reg-hospital').value.trim();
+      const degree       = document.getElementById('reg-degree').value;
+      const bio          = document.getElementById('reg-bio').value.trim();
+      const regPassword  = document.getElementById('reg-password').value;
+
+      if (findAccount(email)) {
+        showError(
+          document.getElementById('reg-email'),
+          document.getElementById('reg-email-err'),
+          'This email is already registered. Please log in instead.'
+        );
+        // Navigate back to step 1 where the email field is.
+        setActiveRegisterStep(1);
+        shakeForm('panel-register');
+        return;
+      }
+
+      const passwordHash = await hashPassword(regPassword);
+
+      // Save the full account record to localStorage so it survives
+      // page navigations (sessionStorage would be cleared on redirect).
+      saveAccount({
+        email,
+        passwordHash,
+        firstName,
+        lastName,
+        phone: `${phoneCode}${phone}`,
+        gender,
+        specialization,
+        license,
+        experience,
+        hospital,
+        degree,
+        bio,
+        status: 'approved', // Set to 'approved' so doctors can log in immediately
+        createdAt: new Date().toISOString(),
+      });
+
+      // Show the success modal and confetti, then reset the form.
+      openModal('successModal');
+      spawnConfetti();
+      registerForm.reset();
+      resetRegForm();
+
+      // No auto-redirect — the success modal has a "Go to Login" button.
+      // Users click it explicitly so they are in control of navigation.
+
+    } catch (err) {
+      console.error('Registration failed:', err);
+      showError(
+        document.getElementById('reg-email'),
+        document.getElementById('reg-email-err'),
+        'Registration failed. Please try again.'
+      );
+      shakeForm('panel-register');
+    } finally {
       btn.disabled = false;
       btnText.classList.remove('hidden');
       btnLoader.classList.add('hidden');
-      showError(document.getElementById('reg-email'), document.getElementById('reg-email-err'), 'This email is already registered');
-      prevStep(3); prevStep(2);
-      shakeForm('panel-register');
-      return;
     }
-
-    // Save simulated account
-    saveAccount({
-      email,
-      password: document.getElementById('reg-password').value,
-      firstName: document.getElementById('reg-fname').value.trim(),
-      lastName:  document.getElementById('reg-lname').value.trim(),
-      specialization: document.getElementById('reg-spec').value,
-      license:   document.getElementById('reg-license').value.trim(),
-      status: 'pending', // Only approved doctors can access
-      createdAt: new Date().toISOString(),
-    });
-
-    btn.disabled = false;
-    btnText.classList.remove('hidden');
-    btnLoader.classList.add('hidden');
-
-    openModal('successModal');
-    spawnConfetti();
-    registerForm.reset();
-    resetRegForm();
   });
 
-  // Init step indicators
+  // Init step indicators.
   updateProgressUI();
 });
 
@@ -707,10 +813,7 @@ function shakeForm(elId) {
 /* ============ Reset Register Form ============ */
 function resetRegForm() {
   AppState.currentStep = 1;
-  document.querySelectorAll('.reg-step').forEach((s, i) => {
-    s.classList.toggle('active', i === 0);
-  });
-  updateProgressUI();
+  setActiveRegisterStep(1);
   // Clear errors
   document.querySelectorAll('.field-error').forEach(e => {
     e.textContent = ''; e.classList.remove('show');

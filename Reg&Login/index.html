@@ -302,7 +302,7 @@
               </div>
             </div>
 
-            <button type="button" class="btn-primary btn-full" onclick="nextStep(1)">
+            <button type="button" class="btn-primary btn-full" id="btn-step1-continue">
               Continue <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
@@ -386,7 +386,7 @@
             </div>
 
             <div class="form-group">
-              <label for="reg-cert" class="form-label"><i class="fa-solid fa-file-medical"></i> Medical Certificate <span class="optional-tag">required</span></label>
+              <label for="reg-cert" class="form-label"><i class="fa-solid fa-file-medical"></i> Medical Certificate <span class="optional-tag">optional</span></label>
               <div class="file-drop-zone" id="certDrop" onclick="document.getElementById('reg-cert').click()">
                 <div class="file-drop-inner">
                   <div class="file-preview-wrap" id="certPreview">
@@ -407,10 +407,10 @@
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn-outline" onclick="prevStep(2)">
+              <button type="button" class="btn-outline" id="btn-step2-back">
                 <i class="fa-solid fa-arrow-left"></i> Back
               </button>
-              <button type="button" class="btn-primary" onclick="nextStep(2)">
+              <button type="button" class="btn-primary" id="btn-step2-continue">
                 Continue <i class="fa-solid fa-arrow-right"></i>
               </button>
             </div>
@@ -476,7 +476,7 @@
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn-outline" onclick="prevStep(3)">
+              <button type="button" class="btn-outline" id="btn-step3-back">
                 <i class="fa-solid fa-arrow-left"></i> Back
               </button>
               <button type="submit" class="btn-primary" id="registerSubmitBtn">

@@ -235,9 +235,12 @@ btnSaveSlot.addEventListener('click', () => {
     return;
   }
 
-  // ⚠️ BUG: string localeCompare returns 0 for equal times,
-  //    so equal start & end pass through unblocked.
-  if (start.localeCompare(end) >= 0) {
+  const toMinutes = (time) => {
+    const [h, m] = time.split(':').map(Number);
+    return (h * 60) + m;
+  };
+
+  if (toMinutes(start) >= toMinutes(end)) {
     showFormError('⚠ Start time must be before end time.');
     slotStartInput.focus();
     return;

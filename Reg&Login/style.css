@@ -181,8 +181,7 @@ body {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem 2rem 2rem;
-  /* BUG 2 (CSS): gap is 15rem instead of 2.5rem — creates a massive gap between the hero panel and auth panel, pushing auth panel off-screen */
-  gap: 15rem;
+  gap: 2.5rem;
   align-items: start;
 }
 
@@ -235,8 +234,7 @@ body {
 
 .hero-title {
   font-family: var(--font-display);
-  /* BUG 1 (CSS): font-size is 3.5rem instead of 2rem — hero title is oversized, overlapping the description text and breaking the left panel layout */
-  font-size: 3.5rem;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 0.75rem;
@@ -696,8 +694,7 @@ body {
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  /* BUG 3 (CSS): justify-content is 'flex-start' instead of 'center' — button text/icon is left-aligned instead of centred */
-  justify-content: flex-start;
+  justify-content: center;
   gap: 8px;
   padding: 0.8rem 1.5rem;
   background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
@@ -878,8 +875,8 @@ body {
 .step-line.filled { background: var(--success); }
 
 /* Registration steps */
-.reg-step { display: none; animation: formFadeIn 0.35s ease both; }
-.reg-step.active { display: flex; flex-direction: column; gap: 1rem; }
+.reg-step { display: none; }
+.reg-step.active { display: flex; flex-direction: column; gap: 1rem; animation: formFadeIn 0.35s ease both; }
 
 /* Terms & approval boxes */
 .terms-box {
@@ -1096,8 +1093,7 @@ body {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  /* BUG 4 (CSS): hero-panel position is NOT overridden to 'static' — it stays 'sticky' on tablet/mobile, causing it to overlap the auth panel when scrolling */
-  /* .hero-panel { position: static; } */
+  .hero-panel { position: static; }
 }
 @media (max-width: 640px) {
   .main-wrapper { padding: 1rem; }
