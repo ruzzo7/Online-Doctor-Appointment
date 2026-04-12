@@ -186,11 +186,15 @@ async function handleLogin(e) {
         
         let data;
         const contentType = res.headers.get('content-type');
+        const rawText = await res.clone().text();
 
         if (contentType && contentType.includes('application/json')) {
-            data = await res.json();
+            try {
+                data = JSON.parse(rawText);
+            } catch (jsonErr) {
+                throw new Error(`Invalid JSON response from server: ${rawText}`);
+            }
         } else {
-            const rawText = await res.text();
             throw new Error(rawText || `Server returned ${res.status} ${res.statusText}`);
         }
 
