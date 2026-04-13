@@ -158,8 +158,42 @@
                     </div>
                     <div style="padding: 28px;">
                         <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Full Name</label>
+                            <input type="text" id="profileFullName" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
                             <label>Email Address</label>
-                            <input type="email" id="profileEmail" disabled style="background: #f8fafc;">
+                            <input type="email" id="profileEmail" readonly style="background: #f8fafc;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Specialization</label>
+                            <input type="text" id="profileSpecialization" placeholder="e.g. Cardiology">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>License Number</label>
+                            <input type="text" id="profileLicense" readonly style="background: #f8fafc;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Experience (Years)</label>
+                            <input type="number" id="profileExperience" min="0" max="60" placeholder="e.g. 10">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Hospital / Clinic</label>
+                            <input type="text" id="profileHospital" placeholder="Hospital or clinic name">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Available From</label>
+                                <input type="time" id="profileAvailableFrom">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Available To</label>
+                                <input type="time" id="profileAvailableTo">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label>Bio</label>
+                            <textarea id="profileBio" placeholder="Write a short bio..." style="min-height: 100px;"></textarea>
                         </div>
                         <div class="form-group" style="margin-bottom: 20px;">
                             <label>Role</label>
@@ -169,6 +203,10 @@
                             <label>Account Status</label>
                             <input type="text" id="profileStatus" disabled style="background: #f8fafc;">
                         </div>
+                        <button class="btn btn-primary" id="profileSaveBtn" style="width: 100%;">
+                            <i data-lucide="save"></i>
+                            <span>Save Profile</span>
+                        </button>
                     </div>
                 </div>
             </div>

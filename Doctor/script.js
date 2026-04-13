@@ -91,6 +91,98 @@ async function fetchAppointments() {
     }
 }
 
+async function loadDoctorProfile() {
+    try {
+        const res = await fetch(`${API_BASE}/get_profile.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: currentUser.id })
+        });
+
+        const result = await res.json();
+        if (!result.success || !result.profile) {
+            showToast(result.message || 'Failed to load profile', 'error');
+            return;
+        }
+
+        const profile = result.profile;
+        document.getElementById('profileEmail').value = profile.email || currentUser.email || '';
+        document.getElementById('profileStatus').value = profile.status || currentUser.status || '';
+        document.getElementById('profileFullName').value = profile.full_name || '';
+        document.getElementById('profileSpecialization').value = profile.specialization || '';
+        document.getElementById('profileLicense').value = profile.license_number || '';
+        document.getElementById('profileExperience').value = profile.experience ?? '';
+        document.getElementById('profileHospital').value = profile.hospital || '';
+        document.getElementById('profileAvailableFrom').value = profile.available_from || '';
+        document.getElementById('profileAvailableTo').value = profile.available_to || '';
+        document.getElementById('profileBio').value = profile.bio || '';
+
+        if (profile.full_name) {
+            document.getElementById('sidebarDoctorName').textContent = profile.full_name;
+        }
+        if (profile.specialization) {
+            document.getElementById('sidebarDoctorSpec').textContent = profile.specialization;
+        }
+    } catch (err) {
+        console.error('Profile fetch error:', err);
+        showToast('Connection error loading profile', 'error');
+    }
+}
+
+async function saveDoctorProfile() {
+    const fullName = document.getElementById('profileFullName').value.trim();
+    const specialization = document.getElementById('profileSpecialization').value.trim();
+    const experience = Number(document.getElementById('profileExperience').value || 0);
+    const hospital = document.getElementById('profileHospital').value.trim();
+    const availableFrom = document.getElementById('profileAvailableFrom').value;
+    const availableTo = document.getElementById('profileAvailableTo').value;
+    const bio = document.getElementById('profileBio').value.trim();
+
+    if (!fullName || !specialization) {
+        showToast('Full name and specialization are required', 'error');
+        return;
+    }
+
+    if (availableFrom && availableTo && availableFrom >= availableTo) {
+        showToast('Available From must be earlier than Available To', 'error');
+        return;
+    }
+
+    const saveBtn = document.getElementById('profileSaveBtn');
+    saveBtn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/update_profile.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUser.id,
+                full_name: fullName,
+                specialization,
+                experience,
+                hospital,
+                available_from: availableFrom,
+                available_to: availableTo,
+                bio
+            })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showToast('Profile updated successfully!', 'success');
+            document.getElementById('sidebarDoctorName').textContent = fullName;
+            document.getElementById('sidebarDoctorSpec').textContent = specialization;
+        } else {
+            showToast(result.message || 'Failed to update profile', 'error');
+        }
+    } catch (err) {
+        console.error('Profile save error:', err);
+        showToast('Connection error saving profile', 'error');
+    } finally {
+        saveBtn.disabled = false;
+    }
+}
+
 function updateStats() {
     const total = allAppointments.length;
     const upcoming = allAppointments.filter(a => a.status === 'upcoming').length;
@@ -331,6 +423,12 @@ checkAuth();
 updateClock();
 setInterval(updateClock, 10000);
 fetchAppointments();
+loadDoctorProfile();
+
+const profileSaveBtn = document.getElementById('profileSaveBtn');
+if (profileSaveBtn) {
+    profileSaveBtn.addEventListener('click', saveDoctorProfile);
+}
 
 if (typeof lucide !== 'undefined') lucide.createIcons();
 
