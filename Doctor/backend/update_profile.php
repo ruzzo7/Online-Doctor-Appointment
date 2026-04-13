@@ -22,6 +22,11 @@ function ensureAvailabilityColumns(PDO $pdo): void
     if (!$toColumn) {
         $pdo->exec("ALTER TABLE doctor_profiles ADD COLUMN available_to TIME NULL");
     }
+
+    $feeColumn = $pdo->query("SHOW COLUMNS FROM doctor_profiles LIKE 'consultation_fee'")->fetch();
+    if (!$feeColumn) {
+        $pdo->exec("ALTER TABLE doctor_profiles ADD COLUMN consultation_fee DECIMAL(10,2) NULL");
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -41,6 +46,7 @@ $userId = (int)$input['user_id'];
 $fullName = trim($input['full_name'] ?? '');
 $specialization = trim($input['specialization'] ?? '');
 $experience = isset($input['experience']) ? (int)$input['experience'] : 0;
+$consultationFee = isset($input['consultation_fee']) && $input['consultation_fee'] !== '' ? (float)$input['consultation_fee'] : null;
 $hospital = trim($input['hospital'] ?? '');
 $availableFrom = trim($input['available_from'] ?? '');
 $availableTo = trim($input['available_to'] ?? '');
@@ -58,6 +64,12 @@ if ($availableFrom !== '' && $availableTo !== '' && strtotime($availableFrom) >=
     exit;
 }
 
+if ($consultationFee !== null && $consultationFee < 0) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Consultation fee must be zero or greater"]);
+    exit;
+}
+
 try {
     ensureAvailabilityColumns($pdo);
 
@@ -71,9 +83,9 @@ try {
 
     // Email and license_number are intentionally not updated here.
     $stmt = $pdo->prepare("UPDATE doctor_profiles
-                           SET full_name = ?, specialization = ?, experience = ?, hospital = ?, available_from = ?, available_to = ?, bio = ?
+                           SET full_name = ?, specialization = ?, experience = ?, consultation_fee = ?, hospital = ?, available_from = ?, available_to = ?, bio = ?
                            WHERE user_id = ?");
-    $stmt->execute([$fullName, $specialization, $experience, $hospital, $availableFrom ?: null, $availableTo ?: null, $bio, $userId]);
+    $stmt->execute([$fullName, $specialization, $experience, $consultationFee, $hospital, $availableFrom ?: null, $availableTo ?: null, $bio, $userId]);
 
     echo json_encode(["success" => true, "message" => "Profile updated successfully"]);
 } catch (PDOException $e) {

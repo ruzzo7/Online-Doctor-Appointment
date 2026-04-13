@@ -112,6 +112,7 @@ async function loadDoctorProfile() {
         document.getElementById('profileSpecialization').value = profile.specialization || '';
         document.getElementById('profileLicense').value = profile.license_number || '';
         document.getElementById('profileExperience').value = profile.experience ?? '';
+        document.getElementById('profileConsultationFee').value = profile.consultation_fee ?? '';
         document.getElementById('profileHospital').value = profile.hospital || '';
         document.getElementById('profileAvailableFrom').value = profile.available_from || '';
         document.getElementById('profileAvailableTo').value = profile.available_to || '';
@@ -133,6 +134,7 @@ async function saveDoctorProfile() {
     const fullName = document.getElementById('profileFullName').value.trim();
     const specialization = document.getElementById('profileSpecialization').value.trim();
     const experience = Number(document.getElementById('profileExperience').value || 0);
+    const consultationFee = document.getElementById('profileConsultationFee').value;
     const hospital = document.getElementById('profileHospital').value.trim();
     const availableFrom = document.getElementById('profileAvailableFrom').value;
     const availableTo = document.getElementById('profileAvailableTo').value;
@@ -140,6 +142,11 @@ async function saveDoctorProfile() {
 
     if (!fullName || !specialization) {
         showToast('Full name and specialization are required', 'error');
+        return;
+    }
+
+    if (consultationFee !== '' && Number(consultationFee) < 0) {
+        showToast('Consultation fee must be zero or greater', 'error');
         return;
     }
 
@@ -160,6 +167,7 @@ async function saveDoctorProfile() {
                 full_name: fullName,
                 specialization,
                 experience,
+                consultation_fee: consultationFee,
                 hospital,
                 available_from: availableFrom,
                 available_to: availableTo,

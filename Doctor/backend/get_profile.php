@@ -22,6 +22,11 @@ function ensureAvailabilityColumns(PDO $pdo): void
     if (!$toColumn) {
         $pdo->exec("ALTER TABLE doctor_profiles ADD COLUMN available_to TIME NULL");
     }
+
+    $feeColumn = $pdo->query("SHOW COLUMNS FROM doctor_profiles LIKE 'consultation_fee'")->fetch();
+    if (!$feeColumn) {
+        $pdo->exec("ALTER TABLE doctor_profiles ADD COLUMN consultation_fee DECIMAL(10,2) NULL");
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -42,7 +47,7 @@ $userId = (int)$input['user_id'];
 try {
     ensureAvailabilityColumns($pdo);
 
-    $stmt = $pdo->prepare("SELECT u.id, u.email, u.role, u.status, dp.full_name, dp.specialization, dp.license_number, dp.experience, dp.hospital, dp.available_from, dp.available_to, dp.bio
+    $stmt = $pdo->prepare("SELECT u.id, u.email, u.role, u.status, dp.full_name, dp.specialization, dp.license_number, dp.experience, dp.consultation_fee, dp.hospital, dp.available_from, dp.available_to, dp.bio
                            FROM users u
                            LEFT JOIN doctor_profiles dp ON dp.user_id = u.id
                            WHERE u.id = ? LIMIT 1");
@@ -64,6 +69,7 @@ try {
             "specialization" => $profile['specialization'] ?? '',
             "license_number" => $profile['license_number'] ?? '',
             "experience" => (int)($profile['experience'] ?? 0),
+            "consultation_fee" => $profile['consultation_fee'] ?? '',
             "hospital" => $profile['hospital'] ?? '',
             "available_from" => $profile['available_from'] ?? '',
             "available_to" => $profile['available_to'] ?? '',
