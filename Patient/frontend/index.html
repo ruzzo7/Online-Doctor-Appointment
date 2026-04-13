@@ -1,190 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MediCare — Patient Dashboard</title>
-  
+
   <!-- SEO & Favicon -->
-  <meta name="description" content="Secure patient dashboard for MediCare online doctor appointments. Track history and find specialists.">
-  
+  <meta name="description"
+    content="Secure patient dashboard for MediCare online doctor appointments. Track history and find specialists.">
+
   <!-- CSS Styles (Sibling) -->
   <link rel="stylesheet" href="styles.css">
-  
+
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-<header>
-  <h1>MediCare Patient Dashboard</h1>
-  <div class="top-actions">
-    <a href="#profile" onclick="showSection(event, 'profile')" id="profileTabBtn">
-      <span>👤 My Profile</span>
-    </a>
-    <button type="button" title="Sign Out Securely">Logout</button>
+  <header>
+    <h1>MediCare Patient Dashboard</h1>
+    <div class="top-actions">
+      <a href="#profile" onclick="showSection(event, 'profile')" id="profileTabBtn">
+        <span>👤 My Profile</span>
+      </a>
+      <button type="button" title="Sign Out Securely" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside>
+      <nav>
+        <a href="#doctors" onclick="showSection(event, 'doctors')" id="doctorsNav" class="active">
+          Doctors
+        </a>
+        <a href="#appointments" onclick="showSection(event, 'appointments')" id="appointmentsNav">
+          Appointments
+        </a>
+        <a href="#notifications" onclick="showSection(event, 'notifications')" id="notificationsNav">
+          Notifications
+        </a>
+        <a href="#records" onclick="showSection(event, 'records')" id="recordsNav">
+          Medical Records
+        </a>
+        <a href="#payments" onclick="showSection(event, 'payments')" id="paymentsNav">
+          Payments
+        </a>
+      </nav>
+    </aside>
+
+    <main>
+      <!-- Profile Section -->
+      <section id="profile" class="card hidden">
+        <h2>Profile Settings</h2>
+        <form id="profileForm" novalidate>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" value="Nikesh Gautam" required disabled>
+            <span class="error-text" id="fullName-error">Full name must be at least 3 characters.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" value="20" required disabled>
+            <span class="error-text" id="age-error">Enter a valid age (1-120).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" value="Nikesh@gmail.com" required disabled>
+            <span class="error-text" id="email-error">Invalid email address.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" value="9812345678" required disabled>
+            <span class="error-text" id="phone-error">Enter a valid 10-digit phone number.</span>
+          </div>
+
+          <button type="submit" class="btn hidden" id="saveProfileBtn">Save</button>
+        </form>
+        <button type="button" class="btn secondary" id="editProfileBtn">Edit My Details</button>
+      </section>
+
+      <!-- Doctors Section -->
+      <section id="doctors" class="card">
+        <h2>Search Specialists</h2>
+        <div class="doctor-controls">
+          <select id="specialty" onchange="filterDoctors()">
+            <option value="">All Specialties</option>
+            <option value="Cardiologist">Cardiologist</option>
+            <option value="Dermatologist">Dermatologist</option>
+            <option value="Neurologist">Neurologist</option>
+            <option value="Pediatrician">Pediatrician</option>
+            <option value="Orthopedic">Orthopedic</option>
+            <option value="General Physician">General Physician</option>
+          </select>
+          <input type="text" id="doctorName" placeholder="Search by name..." oninput="filterDoctors()">
+          <button class="btn" onclick="filterDoctors()">Find Now</button>
+        </div>
+
+        <div id="doctorList" class="doctor-grid">
+          <!-- Dr. Smith -->
+          <div class="doctor-card" data-name="Smith" data-specialty="Cardiologist">
+            <div class="doctor-card__name">Dr. Smith</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> Cardiologist</div>
+              <div class="detail-pill"><strong>Experience:</strong> 10+ years</div>
+              <div class="detail-pill"><strong>Education:</strong> MD, Cardiology</div>
+            </div>
+          </div>
+
+          <!-- Dr. Patel -->
+          <div class="doctor-card" data-name="Patel" data-specialty="Dermatologist">
+            <div class="doctor-card__name">Dr. Patel</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> Dermatologist</div>
+              <div class="detail-pill"><strong>Experience:</strong> 8 years</div>
+              <div class="detail-pill"><strong>Education:</strong> MD, Dermatology</div>
+            </div>
+          </div>
+
+          <!-- Dr. Johnson -->
+          <div class="doctor-card" data-name="Johnson" data-specialty="Neurologist">
+            <div class="doctor-card__name">Dr. Johnson</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> Neurologist</div>
+              <div class="detail-pill"><strong>Experience:</strong> 12 years</div>
+              <div class="detail-pill"><strong>Education:</strong> MD, Neurology Studies</div>
+            </div>
+          </div>
+
+          <!-- Dr. Sharma -->
+          <div class="doctor-card" data-name="Sharma" data-specialty="Pediatrician">
+            <div class="doctor-card__name">Dr. Sharma</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> Pediatrician</div>
+              <div class="detail-pill"><strong>Experience:</strong> 7 years</div>
+              <div class="detail-pill"><strong>Education:</strong> MD, Pediatrics</div>
+            </div>
+          </div>
+
+          <!-- Dr. Lee -->
+          <div class="doctor-card" data-name="Lee" data-specialty="Orthopedic">
+            <div class="doctor-card__name">Dr. Lee</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> Orthopedic</div>
+              <div class="detail-pill"><strong>Experience:</strong> 9 years</div>
+              <div class="detail-pill"><strong>Education:</strong> MS, Orthopedics</div>
+            </div>
+          </div>
+
+          <!-- Dr. Brown -->
+          <div class="doctor-card" data-name="Brown" data-specialty="General Physician">
+            <div class="doctor-card__name">Dr. Brown</div>
+            <div class="doctor-card__details">
+              <div class="detail-pill"><strong>Specialty:</strong> General Physician</div>
+              <div class="detail-pill"><strong>Experience:</strong> 15 years</div>
+              <div class="detail-pill"><strong>Education:</strong> MBBS, Internal Medicine</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Placeholder Sections -->
+      <section id="appointments" class="card hidden">
+        <h2>My Appointments</h2>
+        <p style="color: var(--text-muted);">Manage your upcoming and past medical visits here.</p>
+      </section>
+
+      <section id="notifications" class="card hidden">
+        <h2>Notifications</h2>
+        <p style="color: var(--text-muted);">Recent alerts, reminder messages, and updates.</p>
+      </section>
+
+      <section id="records" class="card hidden">
+        <h2>Medical Records</h2>
+        <p style="color: var(--text-muted);">Access and download your medical history reports securely.</p>
+      </section>
+
+      <section id="payments" class="card hidden">
+        <h2>Payment Hub</h2>
+        <p style="color: var(--text-muted);">View your transaction history and outstanding balance.</p>
+      </section>
+    </main>
   </div>
-</header>
 
-<div class="container">
-  <aside>
-    <nav>
-      <a href="#doctors" onclick="showSection(event, 'doctors')" id="doctorsNav" class="active">
-        Doctors
-      </a>
-      <a href="#appointments" onclick="showSection(event, 'appointments')" id="appointmentsNav">
-        Appointments
-      </a>
-      <a href="#notifications" onclick="showSection(event, 'notifications')" id="notificationsNav">
-        Notifications
-      </a>
-      <a href="#records" onclick="showSection(event, 'records')" id="recordsNav">
-        Medical Records
-      </a>
-      <a href="#payments" onclick="showSection(event, 'payments')" id="paymentsNav">
-        Payments
-      </a>
-    </nav>
-  </aside>
-
-  <main>
-    <!-- Profile Section -->
-    <section id="profile" class="card hidden">
-      <h2>Profile Settings</h2>
-      <form id="profileForm" novalidate>
-        <div class="form-group">
-          <label for="fullName">Full Name</label>
-          <input type="text" id="fullName" name="fullName" value="Nikesh Gautam" required>
-          <span class="error-text" id="fullName-error">Full name must be at least 3 characters.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="age">Age</label>
-          <input type="number" id="age" name="age" value="20" required>
-          <span class="error-text" id="age-error">Enter a valid age (1-120).</span>
-        </div>
-
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" value="Nikesh@gmail.com" required disabled>
-          <span class="error-text" id="email-error">Invalid email address.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" name="phone" value="9812345678" required>
-          <span class="error-text" id="phone-error">Enter a valid 10-digit phone number.</span>
-        </div>
-
-        <button type="submit" class="btn" id="saveProfileBtn">Save My Details</button>
-      </form>
-    </section>
-
-    <!-- Doctors Section -->
-    <section id="doctors" class="card">
-      <h2>Search Specialists</h2>
-      <div class="doctor-controls">
-        <select id="specialty" onchange="filterDoctors()">
-          <option value="">All Specialties</option>
-          <option value="Cardiologist">Cardiologist</option>
-          <option value="Dermatologist">Dermatologist</option>
-          <option value="Neurologist">Neurologist</option>
-          <option value="Pediatrician">Pediatrician</option>
-          <option value="Orthopedic">Orthopedic</option>
-          <option value="General Physician">General Physician</option>
-        </select>
-        <input type="text" id="doctorName" placeholder="Search by name..." oninput="filterDoctors()">
-        <button class="btn" onclick="filterDoctors()">Find Now</button>
-      </div>
-
-      <div id="doctorList" class="doctor-grid">
-        <!-- Dr. Smith -->
-        <div class="doctor-card" data-name="Smith" data-specialty="Cardiologist">
-          <div class="doctor-card__name">Dr. Smith</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> Cardiologist</div>
-            <div class="detail-pill"><strong>Experience:</strong> 10+ years</div>
-            <div class="detail-pill"><strong>Education:</strong> MD, Cardiology</div>
-          </div>
-        </div>
-        
-        <!-- Dr. Patel -->
-        <div class="doctor-card" data-name="Patel" data-specialty="Dermatologist">
-          <div class="doctor-card__name">Dr. Patel</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> Dermatologist</div>
-            <div class="detail-pill"><strong>Experience:</strong> 8 years</div>
-            <div class="detail-pill"><strong>Education:</strong> MD, Dermatology</div>
-          </div>
-        </div>
-        
-        <!-- Dr. Johnson -->
-        <div class="doctor-card" data-name="Johnson" data-specialty="Neurologist">
-          <div class="doctor-card__name">Dr. Johnson</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> Neurologist</div>
-            <div class="detail-pill"><strong>Experience:</strong> 12 years</div>
-            <div class="detail-pill"><strong>Education:</strong> MD, Neurology Studies</div>
-          </div>
-        </div>
-        
-        <!-- Dr. Sharma -->
-        <div class="doctor-card" data-name="Sharma" data-specialty="Pediatrician">
-          <div class="doctor-card__name">Dr. Sharma</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> Pediatrician</div>
-            <div class="detail-pill"><strong>Experience:</strong> 7 years</div>
-            <div class="detail-pill"><strong>Education:</strong> MD, Pediatrics</div>
-          </div>
-        </div>
-        
-        <!-- Dr. Lee -->
-        <div class="doctor-card" data-name="Lee" data-specialty="Orthopedic">
-          <div class="doctor-card__name">Dr. Lee</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> Orthopedic</div>
-            <div class="detail-pill"><strong>Experience:</strong> 9 years</div>
-            <div class="detail-pill"><strong>Education:</strong> MS, Orthopedics</div>
-          </div>
-        </div>
-        
-        <!-- Dr. Brown -->
-        <div class="doctor-card" data-name="Brown" data-specialty="General Physician">
-          <div class="doctor-card__name">Dr. Brown</div>
-          <div class="doctor-card__details">
-            <div class="detail-pill"><strong>Specialty:</strong> General Physician</div>
-            <div class="detail-pill"><strong>Experience:</strong> 15 years</div>
-            <div class="detail-pill"><strong>Education:</strong> MBBS, Internal Medicine</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Placeholder Sections -->
-    <section id="appointments" class="card hidden">
-      <h2>My Appointments</h2>
-      <p style="color: var(--text-muted);">Manage your upcoming and past medical visits here.</p>
-    </section>
-
-    <section id="notifications" class="card hidden">
-      <h2>Notifications</h2>
-      <p style="color: var(--text-muted);">Recent alerts, reminder messages, and updates.</p>
-    </section>
-
-    <section id="records" class="card hidden">
-      <h2>Medical Records</h2>
-      <p style="color: var(--text-muted);">Access and download your medical history reports securely.</p>
-    </section>
-
-    <section id="payments" class="card hidden">
-      <h2>Payment Hub</h2>
-      <p style="color: var(--text-muted);">View your transaction history and outstanding balance.</p>
-    </section>
-  </main>
-</div>
-
-<!-- JavaScript Core Logic (Sibling) -->
-<script src="script.js"></script>
+  <!-- JavaScript Core Logic (Sibling) -->
+  <script src="script.js"></script>
 
 </body>
+
 </html>

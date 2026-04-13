@@ -3,6 +3,113 @@
  * Handles section navigation and doctor filtering.
  */
 
+// ── API URLs ───────────────────────────────────────────────────────────────────
+function resolveApiUrl(endpoint) {
+    const baseUrl = '../backend/';
+    const isDefaultHttpPort = window.location.protocol.startsWith('http') &&
+        (window.location.port === '' || window.location.port === '80' || window.location.port === '443');
+
+    if (!isDefaultHttpPort) {
+        return `http://localhost/Online-Doctor-Appointment/Patient/backend/${endpoint}`;
+    }
+
+    return baseUrl + endpoint;
+}
+
+const GET_PROFILE_URL = resolveApiUrl('get_profile.php');
+const UPDATE_PROFILE_URL = resolveApiUrl('update_profile.php');
+
+// ── Auth Check ─────────────────────────────────────────────────────────────────
+function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('medicare_user'));
+    if (!user || user.role !== 'patient') {
+        window.location.href = '../../login page/frontend/index.html';
+        return null;
+    }
+    return user;
+}
+
+// ── Load Profile ───────────────────────────────────────────────────────────────
+async function loadProfile() {
+    const user = checkAuth();
+    if (!user) return;
+
+    try {
+        const res = await fetch(GET_PROFILE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: user.id })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('fullName').value = data.profile.full_name || '';
+            document.getElementById('age').value = data.profile.age || '';
+            document.getElementById('email').value = data.profile.email || '';
+            document.getElementById('phone').value = data.profile.phone || '';
+        } else {
+            alert('Failed to load profile: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error loading profile:', err);
+        alert('Error loading profile');
+    }
+}
+
+// ── Save Profile ───────────────────────────────────────────────────────────────
+async function saveProfile() {
+    const user = checkAuth();
+    if (!user) return;
+
+    const fullName = document.getElementById('fullName').value.trim();
+    const age = parseInt(document.getElementById('age').value, 10);
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!validators.fullName(fullName) || !validators.age(age) || !validators.phone(phone)) {
+        alert('Please correct the highlighted fields before saving.');
+        return;
+    }
+
+    try {
+        const res = await fetch(UPDATE_PROFILE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: user.id,
+                full_name: fullName,
+                phone: phone,
+                age: age
+            })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message);
+            setEditMode(false);
+        } else {
+            alert('Failed to update profile: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error saving profile:', err);
+        alert('Error saving profile');
+    }
+}
+
+function setEditMode(enabled) {
+    ['fullName', 'age', 'phone'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.disabled = !enabled;
+    });
+
+    if (saveBtn) {
+        saveBtn.classList.toggle('hidden', !enabled);
+        saveBtn.disabled = !enabled;
+    }
+    if (editBtn) {
+        editBtn.classList.toggle('hidden', enabled);
+    }
+}
+
 /**
  * Navigate between different dashboard sections
  * @param {Event|null} event - The click event
@@ -42,7 +149,7 @@ function showSection(event, sectionId) {
 function filterDoctors() {
   const specialtySelect = document.getElementById("specialty");
   const nameInput = document.getElementById("doctorName");
-  
+
   if (!specialtySelect || !nameInput) return;
 
   const specialty = specialtySelect.value.toLowerCase();
@@ -54,7 +161,7 @@ function filterDoctors() {
     doctorCards.forEach(doc => {
       const docName = (doc.getAttribute("data-name") || "").toLowerCase();
       const docSpecialty = (doc.getAttribute("data-specialty") || "").toLowerCase();
-      
+
       const matchesSpecialty = specialty === "" || docSpecialty.includes(specialty);
       const matchesName = name === "" || docName.includes(name);
 
@@ -66,6 +173,7 @@ function filterDoctors() {
 // ── Profile Validation Logic ────────────────────────────────────────────────
 const profileForm = document.getElementById('profileForm');
 const saveBtn = document.getElementById('saveProfileBtn');
+const editBtn = document.getElementById('editProfileBtn');
 
 const validators = {
   fullName: (v) => v.length >= 3 && /^[a-zA-Z\s]+$/.test(v),
@@ -115,12 +223,20 @@ function checkFormValidity() {
  * DOM Initialization
  */
 document.addEventListener('DOMContentLoaded', () => {
+  // Check auth first
+  const user = checkAuth();
+  if (!user) return;
+
   // Sync view with URL hash or default to 'doctors'
   const currentHash = window.location.hash.replace('#', '');
   const validSections = ['profile', 'doctors', 'appointments', 'notifications', 'records', 'payments'];
   const initialSection = validSections.includes(currentHash) ? currentHash : 'doctors';
 
   showSection(null, initialSection);
+
+  // Load profile data
+  loadProfile();
+  setEditMode(false);
 
   // Attach validation listeners
   if (profileForm) {
@@ -133,13 +249,24 @@ document.addEventListener('DOMContentLoaded', () => {
       input.addEventListener('blur', () => validateField(input));
     });
 
-    profileForm.addEventListener('submit', (e) => {
+    profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      alert('Profile updated successfully!');
+      await saveProfile();
     });
   }
+
+  if (editBtn) {
+    editBtn.addEventListener('click', () => setEditMode(true));
+  }
 });
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+function logout() {
+    localStorage.removeItem('medicare_user');
+    window.location.href = '../../login page/frontend/index.html';
+}
 
 // Expose functions to global scope for HTML event handlers
 window.showSection = showSection;
 window.filterDoctors = filterDoctors;
+window.logout = logout;

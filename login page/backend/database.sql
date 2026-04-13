@@ -45,3 +45,13 @@ INSERT INTO `users` (`email`, `password`, `role`, `status`) VALUES
 ('doctor@gmail.com', '$2y$10$U2Y3Wl3Z3Y3Z3Y3Z3Y3Z3O3Y3Z3Y3Z3Y3Z3Y3Z3Y3Z3Y3Z3Y3O3Z3', 'doctor', 'active'),
 ('patient@gmail.com', '$2y$10$U2Y3Wl3Z3Y3Z3Y3Z3Y3Z3O3Y3Z3Y3Z3Y3Z3Y3Z3Y3Z3Y3Z3Y3O3Z3', 'patient', 'active')
 ON DUPLICATE KEY UPDATE `email`=`email`;
+
+-- Dumping data for table `doctor_profiles`
+INSERT INTO `doctor_profiles` (`user_id`, `full_name`, `specialization`, `license_number`, `experience`, `hospital`, `bio`) VALUES
+(2, 'Dr. John Smith', 'Cardiology', 'MED-123456', 10, 'City General Hospital', 'Experienced cardiologist with over 10 years in patient care.')
+ON DUPLICATE KEY UPDATE `user_id`=`user_id`;
+
+-- Dumping data for table `patient_profiles`
+INSERT INTO `patient_profiles` (`user_id`, `full_name`, `phone`, `age`) VALUES
+(3, 'Jane Doe', '9876543210', 25)
+ON DUPLICATE KEY UPDATE `user_id`=`user_id`;
