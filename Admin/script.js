@@ -98,9 +98,162 @@ async function renderPendingRequests() {
     });
 }
 
+async function renderAllDoctors() {
+    const doctors = await fetchData('backend/get_all_doctors.php');
+    const doctorList = document.getElementById('allDoctorList');
+    const summary = document.getElementById('doctorListSummary');
+    if (!doctorList || !summary) return;
+
+    doctorList.innerHTML = '';
+
+    if (!doctors || doctors.length === 0) {
+        summary.textContent = 'No doctors found.';
+        doctorList.innerHTML = '<li class="request-item"><p>No doctors registered yet.</p></li>';
+        return;
+    }
+
+    const counts = doctors.reduce((acc, doc) => {
+        acc[doc.status] = (acc[doc.status] || 0) + 1;
+        return acc;
+    }, {});
+
+    summary.textContent = `${doctors.length} doctors total | Active: ${counts.active || 0} | Pending: ${counts.pending || 0} | Rejected: ${counts.rejected || 0}`;
+
+    doctors.forEach((doc) => {
+        const item = document.createElement('li');
+        item.className = 'request-item';
+        item.innerHTML = `
+            <div>
+                <h4>${doc.full_name}</h4>
+                <p>${doc.email} | ${doc.specialization} | License: ${doc.license_number} | Exp: ${doc.experience}y</p>
+                <small style="color: #64748b;">Status: ${doc.status} | Joined: ${new Date(doc.created_at).toLocaleDateString()}</small>
+            </div>
+            <span class="badge badge-${doc.status}">${doc.status}</span>
+            <div class="request-actions">
+                ${doc.status !== 'active' ? `<button type="button" class="btn btn-secondary" onclick="updateStatus(${doc.id}, 'active')">Approve</button>` : ''}
+                ${doc.status !== 'rejected' ? `<button type="button" class="btn btn-danger" onclick="updateStatus(${doc.id}, 'rejected')">Reject</button>` : ''}
+            </div>
+        `;
+        doctorList.appendChild(item);
+    });
+}
+
+async function renderAllPatients() {
+    const patients = await fetchData('backend/get_all_patients.php');
+    const patientList = document.getElementById('allPatientList');
+    const summary = document.getElementById('patientListSummary');
+    if (!patientList || !summary) return;
+
+    patientList.innerHTML = '';
+
+    if (!patients || patients.length === 0) {
+        summary.textContent = 'No patients found.';
+        patientList.innerHTML = '<li class="request-item"><p>No patients registered yet.</p></li>';
+        return;
+    }
+
+    const counts = patients.reduce((acc, patient) => {
+        acc[patient.status] = (acc[patient.status] || 0) + 1;
+        return acc;
+    }, {});
+
+    summary.textContent = `${patients.length} patients total | Active: ${counts.active || 0} | Pending: ${counts.pending || 0} | Rejected: ${counts.rejected || 0}`;
+
+    patients.forEach((patient) => {
+        const item = document.createElement('li');
+        item.className = 'request-item';
+        item.innerHTML = `
+            <div>
+                <h4>${patient.full_name}</h4>
+                <p>${patient.email} | Phone: ${patient.phone || 'N/A'} | Age: ${patient.age || 'N/A'}</p>
+                <small style="color: #64748b;">Status: ${patient.status} | Joined: ${new Date(patient.created_at).toLocaleDateString()}</small>
+            </div>
+            <span class="badge badge-${patient.status}">${patient.status}</span>
+        `;
+        patientList.appendChild(item);
+    });
+}
+
+function showPendingView() {
+    const requestList = document.getElementById('requestList');
+    const allDoctorList = document.getElementById('allDoctorList');
+    const allPatientList = document.getElementById('allPatientList');
+    const summary = document.getElementById('doctorListSummary');
+    const patientSummary = document.getElementById('patientListSummary');
+    const title = document.getElementById('doctorPanelTitle');
+    const subtitle = document.getElementById('doctorPanelSubtitle');
+    const panel = document.getElementById('doctorPanel');
+    const patientPanel = document.getElementById('patientPanel');
+
+    if (requestList) requestList.classList.remove('hidden');
+    if (allDoctorList) allDoctorList.classList.add('hidden');
+    if (summary) summary.classList.add('hidden');
+    if (allPatientList) allPatientList.classList.add('hidden');
+    if (patientSummary) patientSummary.classList.add('hidden');
+    if (title) title.textContent = 'Pending Signup Requests';
+    if (subtitle) subtitle.textContent = 'Approve or reject new doctor signup requests.';
+    if (panel) panel.classList.remove('is-active');
+    if (patientPanel) patientPanel.classList.add('hidden');
+    renderPendingRequests();
+}
+
+async function showAllDoctorsView() {
+    const requestList = document.getElementById('requestList');
+    const allDoctorList = document.getElementById('allDoctorList');
+    const allPatientList = document.getElementById('allPatientList');
+    const summary = document.getElementById('doctorListSummary');
+    const patientSummary = document.getElementById('patientListSummary');
+    const title = document.getElementById('doctorPanelTitle');
+    const subtitle = document.getElementById('doctorPanelSubtitle');
+    const panel = document.getElementById('doctorPanel');
+    const patientPanel = document.getElementById('patientPanel');
+
+    if (requestList) requestList.classList.add('hidden');
+    if (allDoctorList) allDoctorList.classList.remove('hidden');
+    if (summary) summary.classList.remove('hidden');
+    if (allPatientList) allPatientList.classList.add('hidden');
+    if (patientSummary) patientSummary.classList.add('hidden');
+    if (title) title.textContent = 'All Doctors';
+    if (subtitle) subtitle.textContent = 'See every registered doctor and manage their approval status.';
+    if (panel) panel.classList.add('is-active');
+    if (patientPanel) patientPanel.classList.add('hidden');
+    await renderAllDoctors();
+}
+
+async function showAllPatientsView() {
+    const requestList = document.getElementById('requestList');
+    const allDoctorList = document.getElementById('allDoctorList');
+    const allPatientList = document.getElementById('allPatientList');
+    const summary = document.getElementById('doctorListSummary');
+    const patientSummary = document.getElementById('patientListSummary');
+    const title = document.getElementById('patientPanelTitle');
+    const subtitle = document.getElementById('patientPanelSubtitle');
+    const panel = document.getElementById('doctorPanel');
+    const patientPanel = document.getElementById('patientPanel');
+
+    if (requestList) requestList.classList.add('hidden');
+    if (allDoctorList) allDoctorList.classList.add('hidden');
+    if (summary) summary.classList.add('hidden');
+    if (allPatientList) allPatientList.classList.remove('hidden');
+    if (patientSummary) patientSummary.classList.remove('hidden');
+    if (title) title.textContent = 'All Patients';
+    if (subtitle) subtitle.textContent = 'View every registered patient account and profile details.';
+    if (panel) panel.classList.remove('is-active');
+    if (patientPanel) patientPanel.classList.remove('hidden');
+    await renderAllPatients();
+}
+
 function refreshDashboard() {
     renderStats();
-    renderPendingRequests();
+    const allDoctorList = document.getElementById('allDoctorList');
+    const allPatientList = document.getElementById('allPatientList');
+    if (allDoctorList && !allDoctorList.classList.contains('hidden')) {
+        showAllDoctorsView();
+    } else if (allPatientList && !allPatientList.classList.contains('hidden')) {
+        showAllPatientsView();
+    } else {
+        showPendingView();
+    }
 }
 
 // ── Admin Settings Validation ──────────────────────────────────────────────────
@@ -150,6 +303,32 @@ function attachInteractions() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', refreshDashboard);
+    }
+
+    const openDoctorsBtn = document.getElementById('openDoctorsBtn');
+    if (openDoctorsBtn) {
+        openDoctorsBtn.addEventListener('click', () => {
+            showAllDoctorsView();
+            document.getElementById('doctorPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    const refreshDoctorsBtn = document.getElementById('refreshDoctorsBtn');
+    if (refreshDoctorsBtn) {
+        refreshDoctorsBtn.addEventListener('click', showAllDoctorsView);
+    }
+
+    const openPatientsBtn = document.getElementById('openPatientsBtn');
+    if (openPatientsBtn) {
+        openPatientsBtn.addEventListener('click', () => {
+            showAllPatientsView();
+            document.getElementById('patientPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    const refreshPatientsBtn = document.getElementById('refreshPatientsBtn');
+    if (refreshPatientsBtn) {
+        refreshPatientsBtn.addEventListener('click', showAllPatientsView);
     }
 }
 

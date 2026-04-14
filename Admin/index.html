@@ -55,13 +55,13 @@
                     <article class="action-card">
                         <h4><i data-lucide="user-cog"></i> Manage Doctors</h4>
                         <p>Add, update, or remove doctor profiles.</p>
-                        <a href="#" class="btn btn-secondary">Open Doctors</a>
+                        <button type="button" class="btn btn-secondary" id="openDoctorsBtn">Open Doctors</button>
                     </article>
 
                     <article class="action-card">
                         <h4><i data-lucide="users-round"></i> Manage Patients</h4>
                         <p>View and maintain patient records and accounts.</p>
-                        <a href="#" class="btn btn-secondary">Open Patients</a>
+                        <button type="button" class="btn btn-secondary" id="openPatientsBtn">Open Patients</button>
                     </article>
                 </div>
 
@@ -84,14 +84,29 @@
                 </form>
             </section>
 
-            <section class="panel">
+            <section class="panel" id="doctorPanel">
                 <div class="section-title">
-                    <h3>Pending Signup Requests</h3>
-                    <p>Approve or reject new doctor signup requests.</p>
+                    <h3 id="doctorPanelTitle">Pending Signup Requests</h3>
+                    <p id="doctorPanelSubtitle">Approve or reject new doctor signup requests.</p>
                 </div>
 
                 <ul id="requestList" class="request-list"></ul>
+                <ul id="allDoctorList" class="request-list hidden"></ul>
+                <div id="doctorListSummary" class="doctor-summary hidden"></div>
             </section>
+        </section>
+        
+        <section id="patientPanel" class="panel hidden" style="margin-top: 12px;">
+            <div class="section-title" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div>
+                    <h3 id="patientPanelTitle">All Patients</h3>
+                    <p id="patientPanelSubtitle">View every registered patient account and profile details.</p>
+                </div>
+                <button type="button" class="btn btn-secondary" id="refreshPatientsBtn"><i data-lucide="refresh-ccw"></i> Refresh Patients</button>
+            </div>
+
+            <div id="patientListSummary" class="doctor-summary"></div>
+            <ul id="allPatientList" class="request-list"></ul>
         </section>
     </div>
     <script src="script.js"></script>

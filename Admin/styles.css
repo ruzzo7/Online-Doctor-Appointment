@@ -243,10 +243,68 @@ body {
     color: var(--amber);
 }
 
+.badge-active {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.badge-pending {
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.badge-rejected {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.badge-active {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.badge-pending {
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.badge-rejected {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
 .request-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+}
+
+.doctor-summary {
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 10px 12px;
+    background: var(--primary-soft);
+    border: 1px solid #e9d5ff;
+    border-radius: 10px;
+}
+
+#patientPanel {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+#patientPanel.is-active {
+    border-color: #c084fc;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.08);
+}
+
+#doctorPanel {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+#doctorPanel.is-active {
+    border-color: #c084fc;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.08);
 }
 
 @media (max-width: 960px) {
