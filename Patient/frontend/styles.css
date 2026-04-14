@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   --primary: #064e3b;
   --primary-light: #10b981;
@@ -11,9 +17,9 @@
   --white: #ffffff;
   --radius-lg: 16px;
   --radius-md: 12px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -278,6 +284,7 @@ main {
   nav {
     width: 240px;
   }
+
   main {
     margin-left: 240px;
     padding: 32px;
@@ -294,10 +301,12 @@ main {
     border-bottom: 1px solid #f1f5f9;
     padding: 16px;
   }
+
   main {
     margin-left: 0;
     padding: 24px;
   }
+
   .doctor-grid {
     grid-template-columns: 1fr;
   }
@@ -307,16 +316,20 @@ main {
   header {
     padding: 0 16px;
   }
+
   header h1 {
     font-size: 1rem;
   }
+
   .top-actions a span {
     display: none;
   }
+
   .card {
     padding: 24px;
   }
 }
+
 /* Live Validation & Form Styles */
 .error-text {
   color: #ef4444;
@@ -329,14 +342,17 @@ main {
   transition: all 0.3s ease;
   display: block;
 }
+
 .error-text.visible {
   height: auto;
   opacity: 1;
   margin-top: 4px;
 }
+
 .form-group {
   margin-bottom: 20px;
 }
+
 .form-group label {
   display: block;
   font-size: 0.875rem;
@@ -344,6 +360,7 @@ main {
   margin-bottom: 6px;
   color: var(--text-main);
 }
+
 .form-group input {
   width: 100%;
   padding: 12px 14px;
@@ -352,22 +369,332 @@ main {
   font-size: 0.9375rem;
   transition: var(--transition);
   outline: none;
+  box-sizing: border-box;
 }
+
 .form-group input:focus {
   border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
+
 .form-group.invalid input {
   border-color: #ef4444 !important;
   background-color: #fef2f2;
 }
+
 .form-group.valid input {
   border-color: #10b981 !important;
   background-color: #f0fdf4;
 }
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
+}
+
+.doctor-card__actions {
+  padding: 0 24px 24px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn.secondary {
+  background: #e5e7eb;
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  background: #d1d5db;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.65);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  z-index: 2000;
+  overflow-y: auto;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  margin: 8px auto;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.modal-card h2 {
+  margin: 0 0 8px;
+  color: var(--primary);
+}
+
+.modal-subtitle {
+  margin: 0 0 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card .form-group textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100px;
+}
+
+.modal-card .form-group textarea:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.modal-card .form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.9375rem;
+  transition: var(--transition);
+  outline: none;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.modal-card .form-group input:disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+#bookingForm {
+  display: grid;
+  gap: 14px;
+}
+
+#bookingForm .form-group {
+  margin-bottom: 0;
+}
+
+#bookingForm label {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+#bookingForm input,
+#bookingForm textarea {
+  background: #ffffff;
+  color: #111827;
+}
+
+#confirmBookingBtn {
+  margin-top: 4px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.appointments-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-pill {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.appointments-list {
+  display: grid;
+  gap: 16px;
+}
+
+.appointment-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfffd 100%);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.appointment-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.appointment-card__top h3 {
+  margin: 0 0 4px;
+  color: var(--primary);
+  font-size: 1.05rem;
+}
+
+.appointment-card__top p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.appointment-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.appointment-status--upcoming {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.appointment-status--completed {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.appointment-status--cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.appointment-card__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+  padding: 18px 20px 20px;
+}
+
+.appointment-meta {
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+
+.appointment-meta strong {
+  color: var(--primary);
+}
+
+.appointment-meta--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .section-heading-row {
+    flex-direction: column;
+  }
+
+  .appointment-card__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hard-scoped booking modal styles to prevent layout conflicts */
+#bookAppointmentModal {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(17, 24, 39, 0.65) !important;
+  padding: 16px !important;
+  z-index: 3000 !important;
+  overflow-y: auto !important;
+}
+
+#bookAppointmentModal.hidden {
+  display: none !important;
+}
+
+#bookAppointmentModal .modal-card {
+  width: 100% !important;
+  max-width: 480px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  padding: 20px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22) !important;
+}
+
+#bookAppointmentModal #bookingForm {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+#bookAppointmentModal #bookingForm .form-group {
+  margin: 0 !important;
+}
+
+#bookAppointmentModal #bookingForm label {
+  display: block !important;
+  margin-bottom: 6px !important;
+}
+
+#bookAppointmentModal #bookingForm input,
+#bookAppointmentModal #bookingForm textarea {
+  width: 100% !important;
+  font-size: 14px !important;
+}
+
+#bookAppointmentModal #confirmBookingBtn {
+  width: 100% !important;
+  margin-top: 4px !important;
 }

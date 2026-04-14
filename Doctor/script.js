@@ -44,7 +44,7 @@ function updateClock() {
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     document.getElementById('topbarClock').textContent = `${String(h).padStart(2, '0')}:${m} ${ampm}`;
-    
+
     const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
     document.getElementById('topbarDate').textContent = now.toLocaleDateString('en-US', options);
 }
@@ -75,15 +75,18 @@ function switchSection(section) {
 // ── Data Fetching ──────────────────────────────────────────
 async function fetchAppointments() {
     try {
+        console.log(`[Doctor] Fetching appointments for doctor_id=${currentUser.id}`);
         const res = await fetch(`${API_BASE}/get_appointments.php?doctor_id=${currentUser.id}`);
         const result = await res.json();
+        console.log(`[Doctor] Fetch result:`, result);
         if (result.success) {
+            console.log(`[Doctor] Loaded ${result.data?.length || 0} appointment(s)`);
             allAppointments = result.data;
             updateStats();
             renderAppointments();
         } else {
             console.error('Failed to fetch:', result.message);
-            showToast('Failed to load appointments', 'error');
+            showToast('Failed to load appointments: ' + result.message, 'error');
         }
     } catch (err) {
         console.error('Fetch error:', err);
@@ -432,6 +435,20 @@ updateClock();
 setInterval(updateClock, 10000);
 fetchAppointments();
 loadDoctorProfile();
+setInterval(fetchAppointments, 30000);
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        fetchAppointments();
+    }
+});
+
+window.addEventListener('storage', (event) => {
+    if (event.key === 'appointments_refresh_token') {
+        console.log('[Doctor] Storage event detected - refreshing appointments');
+        fetchAppointments();
+    }
+});
 
 const profileSaveBtn = document.getElementById('profileSaveBtn');
 if (profileSaveBtn) {

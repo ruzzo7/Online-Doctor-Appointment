@@ -102,72 +102,28 @@
         </div>
 
         <div id="doctorList" class="doctor-grid">
-          <!-- Dr. Smith -->
-          <div class="doctor-card" data-name="Smith" data-specialty="Cardiologist">
-            <div class="doctor-card__name">Dr. Smith</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> Cardiologist</div>
-              <div class="detail-pill"><strong>Experience:</strong> 10+ years</div>
-              <div class="detail-pill"><strong>Education:</strong> MD, Cardiology</div>
-            </div>
-          </div>
-
-          <!-- Dr. Patel -->
-          <div class="doctor-card" data-name="Patel" data-specialty="Dermatologist">
-            <div class="doctor-card__name">Dr. Patel</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> Dermatologist</div>
-              <div class="detail-pill"><strong>Experience:</strong> 8 years</div>
-              <div class="detail-pill"><strong>Education:</strong> MD, Dermatology</div>
-            </div>
-          </div>
-
-          <!-- Dr. Johnson -->
-          <div class="doctor-card" data-name="Johnson" data-specialty="Neurologist">
-            <div class="doctor-card__name">Dr. Johnson</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> Neurologist</div>
-              <div class="detail-pill"><strong>Experience:</strong> 12 years</div>
-              <div class="detail-pill"><strong>Education:</strong> MD, Neurology Studies</div>
-            </div>
-          </div>
-
-          <!-- Dr. Sharma -->
-          <div class="doctor-card" data-name="Sharma" data-specialty="Pediatrician">
-            <div class="doctor-card__name">Dr. Sharma</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> Pediatrician</div>
-              <div class="detail-pill"><strong>Experience:</strong> 7 years</div>
-              <div class="detail-pill"><strong>Education:</strong> MD, Pediatrics</div>
-            </div>
-          </div>
-
-          <!-- Dr. Lee -->
-          <div class="doctor-card" data-name="Lee" data-specialty="Orthopedic">
-            <div class="doctor-card__name">Dr. Lee</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> Orthopedic</div>
-              <div class="detail-pill"><strong>Experience:</strong> 9 years</div>
-              <div class="detail-pill"><strong>Education:</strong> MS, Orthopedics</div>
-            </div>
-          </div>
-
-          <!-- Dr. Brown -->
-          <div class="doctor-card" data-name="Brown" data-specialty="General Physician">
-            <div class="doctor-card__name">Dr. Brown</div>
-            <div class="doctor-card__details">
-              <div class="detail-pill"><strong>Specialty:</strong> General Physician</div>
-              <div class="detail-pill"><strong>Experience:</strong> 15 years</div>
-              <div class="detail-pill"><strong>Education:</strong> MBBS, Internal Medicine</div>
-            </div>
+          <div class="empty-state" id="doctorListState">
+            <p style="color: var(--text-muted);">Loading doctors...</p>
           </div>
         </div>
       </section>
 
       <!-- Placeholder Sections -->
       <section id="appointments" class="card hidden">
-        <h2>My Appointments</h2>
-        <p style="color: var(--text-muted);">Manage your upcoming and past medical visits here.</p>
+        <div class="section-heading-row">
+          <div>
+            <h2>Manage Your Appointments</h2>
+            <p style="color: var(--text-muted); margin-top: -12px;">Track upcoming visits, completed appointments, and
+              booking details.</p>
+          </div>
+          <button type="button" class="btn secondary" id="refreshAppointmentsBtn">Refresh</button>
+        </div>
+        <div id="patientAppointmentsSummary" class="appointments-summary"></div>
+        <div id="patientAppointmentsList" class="appointments-list">
+          <div class="empty-state">
+            <p style="color: var(--text-muted);">Loading appointments...</p>
+          </div>
+        </div>
       </section>
 
       <section id="notifications" class="card hidden">
@@ -189,6 +145,44 @@
 
   <!-- JavaScript Core Logic (Sibling) -->
   <script src="script.js"></script>
+
+  <div class="modal-overlay hidden" id="bookAppointmentModal">
+    <div class="modal-card">
+      <button class="modal-close" type="button" onclick="closeBookingModal()">&times;</button>
+      <h2>Book Appointment</h2>
+      <p class="modal-subtitle" id="bookingDoctorSummary">Select a doctor and appointment time.</p>
+
+      <form id="bookingForm">
+        <input type="hidden" id="bookingDoctorId">
+        <div class="form-group">
+          <label>Doctor</label>
+          <input type="text" id="bookingDoctorName" disabled>
+        </div>
+        <div class="form-group">
+          <label>Specialization</label>
+          <input type="text" id="bookingDoctorSpecialization" disabled>
+        </div>
+        <div class="form-group">
+          <label>Available Time</label>
+          <input type="text" id="bookingDoctorAvailability" disabled>
+        </div>
+        <div class="form-group">
+          <label for="bookingDate">Appointment Date</label>
+          <input type="date" id="bookingDate" required>
+        </div>
+        <div class="form-group">
+          <label for="bookingTime">Appointment Time</label>
+          <input type="time" id="bookingTime" required>
+        </div>
+        <div class="form-group">
+          <label for="bookingReason">Reason</label>
+          <textarea id="bookingReason" rows="4" placeholder="Describe your symptoms or reason for visit"
+            required></textarea>
+        </div>
+        <button type="button" class="btn" id="confirmBookingBtn" style="width: 100%;">Confirm Booking</button>
+      </form>
+    </div>
+  </div>
 
 </body>
 

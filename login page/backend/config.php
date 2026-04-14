@@ -12,6 +12,14 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
+function ensureColumnExists(PDO $pdo, string $table, string $column, string $definition): void
+{
+    $stmt = $pdo->query("SHOW COLUMNS FROM `{$table}` LIKE '{$column}'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition}");
+    }
+}
+
 function bootstrapDatabase(PDO $pdo, string $dbName): void
 {
     $pdo->exec("CREATE DATABASE IF NOT EXISTS {$dbName} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -33,10 +41,17 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
         specialization VARCHAR(255) NOT NULL,
         license_number VARCHAR(100) NOT NULL,
         experience INT NOT NULL,
+        consultation_fee DECIMAL(10,2),
         hospital VARCHAR(255),
+        available_from TIME,
+        available_to TIME,
         bio TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    ensureColumnExists($pdo, 'doctor_profiles', 'consultation_fee', 'DECIMAL(10,2) NULL');
+    ensureColumnExists($pdo, 'doctor_profiles', 'available_from', 'TIME NULL');
+    ensureColumnExists($pdo, 'doctor_profiles', 'available_to', 'TIME NULL');
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS patient_profiles (
         id INT AUTO_INCREMENT PRIMARY KEY,

@@ -1,294 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard — MediCare Pro</title>
-    <meta name="description" content="MediCare Pro Doctor Dashboard — Manage appointments, write prescriptions, and track patient records.">
+    <meta name="description"
+        content="MediCare Pro Doctor Dashboard — Manage appointments, write prescriptions, and track patient records.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-<div class="dashboard-layout">
-    <!-- ═══ SIDEBAR ═══ -->
-    <aside class="sidebar">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
+    <div class="dashboard-layout">
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
 
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <div class="sidebar-logo-icon"><i data-lucide="heart-pulse"></i></div>
-                <span class="sidebar-logo-text">MediCare Pro</span>
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon"><i data-lucide="heart-pulse"></i></div>
+                    <span class="sidebar-logo-text">MediCare Pro</span>
+                </div>
             </div>
-        </div>
 
-        <div class="doctor-info">
-            <div class="doctor-avatar"><i data-lucide="user"></i></div>
-            <div>
-                <div class="doctor-name" id="sidebarDoctorName">Dr. John Smith</div>
-                <div class="doctor-role" id="sidebarDoctorSpec">Cardiologist</div>
-            </div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <button class="nav-item active" data-section="appointments" onclick="switchSection('appointments')">
-                <i data-lucide="calendar-check"></i>
-                <span>Appointments</span>
-                <span class="nav-badge" id="navBadgeUpcoming">0</span>
-            </button>
-            <button class="nav-item" data-section="prescriptions" onclick="switchSection('prescriptions')">
-                <i data-lucide="file-text"></i>
-                <span>Prescriptions</span>
-            </button>
-            <button class="nav-item" data-section="profile" onclick="switchSection('profile')">
-                <i data-lucide="user-cog"></i>
-                <span>My Profile</span>
-            </button>
-        </nav>
-
-        <div class="sidebar-footer">
-            <a href="../login page/frontend/index.html" class="signout-btn" id="signOutBtn">
-                <i data-lucide="log-out"></i>
-                <span>Sign Out</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <div class="main-content">
-        <!-- Topbar -->
-        <header class="topbar">
-            <div class="topbar-left">
+            <div class="doctor-info">
+                <div class="doctor-avatar"><i data-lucide="user"></i></div>
                 <div>
-                    <div class="topbar-title" id="topbarTitle">Appointments</div>
-                    <div class="topbar-subtitle" id="topbarSubtitle">Manage your patient appointments and prescriptions</div>
-                </div>
-            </div>
-            <div class="topbar-right">
-                <span class="topbar-date" id="topbarDate"></span>
-                <span class="topbar-clock" id="topbarClock"></span>
-            </div>
-        </header>
-
-        <!-- Content Area -->
-        <div class="content-area">
-            <!-- ═══ APPOINTMENTS SECTION ═══ -->
-            <div class="dashboard-section active" id="section-appointments">
-                <!-- Stats -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue"><i data-lucide="calendar-days"></i></div>
-                        <div>
-                            <div class="stat-value" id="statTotal">0</div>
-                            <div class="stat-label">Total Appointments</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon green"><i data-lucide="clock"></i></div>
-                        <div>
-                            <div class="stat-value" id="statUpcoming">0</div>
-                            <div class="stat-label">Upcoming</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon purple"><i data-lucide="check-circle-2"></i></div>
-                        <div>
-                            <div class="stat-value" id="statCompleted">0</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon amber"><i data-lucide="file-text"></i></div>
-                        <div>
-                            <div class="stat-value" id="statPrescriptions">0</div>
-                            <div class="stat-label">Prescriptions</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter Bar -->
-                <div class="filter-bar">
-                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
-                    <button class="filter-btn" data-filter="upcoming" onclick="setFilter('upcoming')">Upcoming</button>
-                    <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">Completed</button>
-                    <button class="filter-btn" data-filter="cancelled" onclick="setFilter('cancelled')">Cancelled</button>
-                    <div class="filter-search">
-                        <i data-lucide="search"></i>
-                        <input type="text" placeholder="Search patient..." id="searchInput" oninput="handleSearch()">
-                    </div>
-                </div>
-
-                <!-- Table -->
-                <div class="table-card">
-                    <div class="table-header">
-                        <span class="table-title">Patient Appointments</span>
-                        <span class="table-count" id="tableCount">0 records</span>
-                    </div>
-                    <div id="tableBody">
-                        <!-- JS renders content here -->
-                    </div>
+                    <div class="doctor-name" id="sidebarDoctorName">Dr. John Smith</div>
+                    <div class="doctor-role" id="sidebarDoctorSpec">Cardiologist</div>
                 </div>
             </div>
 
-            <!-- ═══ PRESCRIPTIONS SECTION ═══ -->
-            <div class="dashboard-section" id="section-prescriptions">
-                <div class="table-card">
-                    <div class="table-header">
-                        <span class="table-title">Prescription History</span>
-                    </div>
-                    <div id="prescriptionsList">
-                        <div class="empty-state">
-                            <i data-lucide="file-text"></i>
-                            <div class="empty-state-title">Prescriptions will appear here</div>
-                            <div class="empty-state-text">Write a prescription from the Appointments tab to see it listed here.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ═══ PROFILE SECTION ═══ -->
-            <div class="dashboard-section" id="section-profile">
-                <div class="table-card" style="max-width: 600px;">
-                    <div class="table-header">
-                        <span class="table-title">Doctor Profile</span>
-                    </div>
-                    <div style="padding: 28px;">
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Full Name</label>
-                            <input type="text" id="profileFullName" placeholder="Enter your full name">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Email Address</label>
-                            <input type="email" id="profileEmail" readonly style="background: #f8fafc;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Specialization</label>
-                            <input type="text" id="profileSpecialization" placeholder="e.g. Cardiology">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>License Number</label>
-                            <input type="text" id="profileLicense" readonly style="background: #f8fafc;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Experience (Years)</label>
-                            <input type="number" id="profileExperience" min="0" max="60" placeholder="e.g. 10">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Consultation Fee</label>
-                            <input type="number" id="profileConsultationFee" min="0" step="0.01" placeholder="e.g. 1500">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Hospital / Clinic</label>
-                            <input type="text" id="profileHospital" placeholder="Hospital or clinic name">
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label>Available From</label>
-                                <input type="time" id="profileAvailableFrom">
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label>Available To</label>
-                                <input type="time" id="profileAvailableTo">
-                            </div>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Bio</label>
-                            <textarea id="profileBio" placeholder="Write a short bio..." style="min-height: 100px;"></textarea>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Role</label>
-                            <input type="text" value="Doctor" disabled style="background: #f8fafc;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label>Account Status</label>
-                            <input type="text" id="profileStatus" disabled style="background: #f8fafc;">
-                        </div>
-                        <button class="btn btn-primary" id="profileSaveBtn" style="width: 100%;">
-                            <i data-lucide="save"></i>
-                            <span>Save Profile</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ═══ PRESCRIPTION MODAL ═══ -->
-<div class="modal-overlay" id="prescriptionModal">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-header-left">
-                <div class="modal-icon"><i data-lucide="clipboard-list"></i></div>
-                <div>
-                    <div class="modal-title">Write Prescription</div>
-                    <div class="modal-subtitle">Fill in the prescription details below</div>
-                </div>
-            </div>
-            <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
-        </div>
-
-        <div class="patient-summary" id="modalPatientSummary">
-            <div class="patient-summary-item">
-                <span class="patient-summary-label">Patient</span>
-                <span class="patient-summary-value" id="modalPatientName">—</span>
-            </div>
-            <div class="patient-summary-item">
-                <span class="patient-summary-label">Age</span>
-                <span class="patient-summary-value" id="modalPatientAge">—</span>
-            </div>
-            <div class="patient-summary-item">
-                <span class="patient-summary-label">Reason</span>
-                <span class="patient-summary-value" id="modalPatientReason">—</span>
-            </div>
-        </div>
-
-        <form id="prescriptionForm">
-            <div class="modal-body">
-                <input type="hidden" id="rxAppointmentId">
-                <input type="hidden" id="rxPatientId">
-
-                <div class="form-group">
-                    <label for="rxDiagnosis">Diagnosis *</label>
-                    <textarea id="rxDiagnosis" placeholder="Enter diagnosis details..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="rxMedicines">Medicines *</label>
-                    <textarea id="rxMedicines" placeholder="e.g. Amoxicillin 500mg – 1 tab 3x/day for 7 days" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="rxInstructions">Instructions</label>
-                    <textarea id="rxInstructions" placeholder="Diet, rest, lifestyle advice..." style="min-height: 70px;"></textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="rxFollowUp">Follow-up Date</label>
-                        <input type="date" id="rxFollowUp">
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="rxSubmitBtn">
-                    <i data-lucide="save"></i>
-                    <span>Save Prescription</span>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="appointments" onclick="switchSection('appointments')">
+                    <i data-lucide="calendar-check"></i>
+                    <span>Appointments</span>
+                    <span class="nav-badge" id="navBadgeUpcoming">0</span>
                 </button>
+                <button class="nav-item" data-section="prescriptions" onclick="switchSection('prescriptions')">
+                    <i data-lucide="file-text"></i>
+                    <span>Prescriptions</span>
+                </button>
+                <button class="nav-item" data-section="profile" onclick="switchSection('profile')">
+                    <i data-lucide="user-cog"></i>
+                    <span>My Profile</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../login page/frontend/index.html" class="signout-btn" id="signOutBtn">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                </a>
             </div>
-        </form>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div>
+                        <div class="topbar-title" id="topbarTitle">Appointments</div>
+                        <div class="topbar-subtitle" id="topbarSubtitle">Manage your patient appointments and
+                            prescriptions</div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="topbar-date" id="topbarDate"></span>
+                    <span class="topbar-clock" id="topbarClock"></span>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- ═══ APPOINTMENTS SECTION ═══ -->
+                <div class="dashboard-section active" id="section-appointments">
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i data-lucide="calendar-days"></i></div>
+                            <div>
+                                <div class="stat-value" id="statTotal">0</div>
+                                <div class="stat-label">Total Appointments</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i data-lucide="clock"></i></div>
+                            <div>
+                                <div class="stat-value" id="statUpcoming">0</div>
+                                <div class="stat-label">Upcoming</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><i data-lucide="check-circle-2"></i></div>
+                            <div>
+                                <div class="stat-value" id="statCompleted">0</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon amber"><i data-lucide="file-text"></i></div>
+                            <div>
+                                <div class="stat-value" id="statPrescriptions">0</div>
+                                <div class="stat-label">Prescriptions</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                        <button class="filter-btn" data-filter="upcoming"
+                            onclick="setFilter('upcoming')">Upcoming</button>
+                        <button class="filter-btn" data-filter="completed"
+                            onclick="setFilter('completed')">Completed</button>
+                        <button class="filter-btn" data-filter="cancelled"
+                            onclick="setFilter('cancelled')">Cancelled</button>
+                        <div class="filter-search">
+                            <i data-lucide="search"></i>
+                            <input type="text" placeholder="Search patient..." id="searchInput"
+                                oninput="handleSearch()">
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <span class="table-title">Patient Appointments</span>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <span class="table-count" id="tableCount">0 records</span>
+                                <button class="btn btn-primary" id="refreshAppointmentsBtn"
+                                    onclick="fetchAppointments()"
+                                    style="padding: 10px 16px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div id="tableBody">
+                            <!-- JS renders content here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ PRESCRIPTIONS SECTION ═══ -->
+                <div class="dashboard-section" id="section-prescriptions">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <span class="table-title">Prescription History</span>
+                        </div>
+                        <div id="prescriptionsList">
+                            <div class="empty-state">
+                                <i data-lucide="file-text"></i>
+                                <div class="empty-state-title">Prescriptions will appear here</div>
+                                <div class="empty-state-text">Write a prescription from the Appointments tab to see it
+                                    listed here.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ PROFILE SECTION ═══ -->
+                <div class="dashboard-section" id="section-profile">
+                    <div class="table-card" style="max-width: 600px;">
+                        <div class="table-header">
+                            <span class="table-title">Doctor Profile</span>
+                        </div>
+                        <div style="padding: 28px;">
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Full Name</label>
+                                <input type="text" id="profileFullName" placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Email Address</label>
+                                <input type="email" id="profileEmail" readonly style="background: #f8fafc;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Specialization</label>
+                                <input type="text" id="profileSpecialization" placeholder="e.g. Cardiology">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>License Number</label>
+                                <input type="text" id="profileLicense" readonly style="background: #f8fafc;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Experience (Years)</label>
+                                <input type="number" id="profileExperience" min="0" max="60" placeholder="e.g. 10">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Consultation Fee</label>
+                                <input type="number" id="profileConsultationFee" min="0" step="0.01"
+                                    placeholder="e.g. 1500">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Hospital / Clinic</label>
+                                <input type="text" id="profileHospital" placeholder="Hospital or clinic name">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Available From</label>
+                                    <input type="time" id="profileAvailableFrom">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Available To</label>
+                                    <input type="time" id="profileAvailableTo">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Bio</label>
+                                <textarea id="profileBio" placeholder="Write a short bio..."
+                                    style="min-height: 100px;"></textarea>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Role</label>
+                                <input type="text" value="Doctor" disabled style="background: #f8fafc;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Account Status</label>
+                                <input type="text" id="profileStatus" disabled style="background: #f8fafc;">
+                            </div>
+                            <button class="btn btn-primary" id="profileSaveBtn" style="width: 100%;">
+                                <i data-lucide="save"></i>
+                                <span>Save Profile</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- Toast Notification -->
-<div class="toast" id="toast"></div>
+    <!-- ═══ PRESCRIPTION MODAL ═══ -->
+    <div class="modal-overlay" id="prescriptionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-icon"><i data-lucide="clipboard-list"></i></div>
+                    <div>
+                        <div class="modal-title">Write Prescription</div>
+                        <div class="modal-subtitle">Fill in the prescription details below</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+            </div>
 
-<script src="script.js"></script>
+            <div class="patient-summary" id="modalPatientSummary">
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Patient</span>
+                    <span class="patient-summary-value" id="modalPatientName">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Age</span>
+                    <span class="patient-summary-value" id="modalPatientAge">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Reason</span>
+                    <span class="patient-summary-value" id="modalPatientReason">—</span>
+                </div>
+            </div>
+
+            <form id="prescriptionForm">
+                <div class="modal-body">
+                    <input type="hidden" id="rxAppointmentId">
+                    <input type="hidden" id="rxPatientId">
+
+                    <div class="form-group">
+                        <label for="rxDiagnosis">Diagnosis *</label>
+                        <textarea id="rxDiagnosis" placeholder="Enter diagnosis details..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rxMedicines">Medicines *</label>
+                        <textarea id="rxMedicines" placeholder="e.g. Amoxicillin 500mg – 1 tab 3x/day for 7 days"
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rxInstructions">Instructions</label>
+                        <textarea id="rxInstructions" placeholder="Diet, rest, lifestyle advice..."
+                            style="min-height: 70px;"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rxFollowUp">Follow-up Date</label>
+                            <input type="date" id="rxFollowUp">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="rxSubmitBtn">
+                        <i data-lucide="save"></i>
+                        <span>Save Prescription</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
