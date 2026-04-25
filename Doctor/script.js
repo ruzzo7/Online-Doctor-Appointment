@@ -133,6 +133,45 @@ async function loadDoctorProfile() {
     }
 }
 
+async function updateAppointmentStatus(appointmentId, action) {
+    const normalizedAction = String(action || '').toLowerCase();
+    if (!['accept', 'reject'].includes(normalizedAction)) {
+        showToast('Invalid action requested', 'error');
+        return;
+    }
+
+    if (normalizedAction === 'reject') {
+        const confirmed = window.confirm('Are you sure you want to reject this appointment?');
+        if (!confirmed) return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/update_appointment.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                appointment_id: appointmentId,
+                doctor_id: currentUser.id,
+                action: normalizedAction
+            })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            if (result.refresh_token) {
+                localStorage.setItem('appointments_refresh_token', String(result.refresh_token));
+            }
+            showToast(result.message || 'Appointment updated successfully', 'success');
+            fetchAppointments();
+        } else {
+            showToast(result.message || 'Failed to update appointment', 'error');
+        }
+    } catch (err) {
+        console.error('Update appointment error:', err);
+        showToast('Connection error updating appointment', 'error');
+    }
+}
+
 async function saveDoctorProfile() {
     const fullName = document.getElementById('profileFullName').value.trim();
     const specialization = document.getElementById('profileSpecialization').value.trim();
@@ -287,7 +326,7 @@ function renderAppointments() {
                     <th>Date & Time</th>
                     <th>Reason</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Accept / Reject</th>
                 </tr>
             </thead>
             <tbody>
@@ -303,12 +342,21 @@ function renderAppointments() {
         const truncatedReason = reason.length > 45 ? reason.substring(0, 45) + '…' : reason;
 
         const actionBtn = appt.status === 'upcoming'
-            ? `<button class="action-btn action-btn-primary" onclick="openPrescriptionModal(${appt.appointment_id}, '${name.replace(/'/g, "\\'")}', '${appt.patient_age || "N/A"}', '${reason.replace(/'/g, "\\'")}', ${appt.patient_id})">
-                   <i data-lucide="pen-line"></i> Prescribe
-               </button>`
-            : `<button class="action-btn action-btn-outline" disabled>
-                   <i data-lucide="check"></i> Done
-               </button>`;
+            ? `<div class="action-group">
+                   <button class="action-btn action-btn-success" onclick="updateAppointmentStatus(${appt.appointment_id}, 'accept')">
+                       <i data-lucide="check"></i> Accept
+                   </button>
+                   <button class="action-btn action-btn-danger" onclick="updateAppointmentStatus(${appt.appointment_id}, 'reject')">
+                       <i data-lucide="x"></i> Reject
+                   </button>
+               </div>`
+            : appt.status === 'cancelled'
+                ? `<button class="action-btn action-btn-outline" disabled>
+                       <i data-lucide="x-circle"></i> Rejected
+                   </button>`
+                : `<button class="action-btn action-btn-outline" disabled>
+                       <i data-lucide="check"></i> Done
+                   </button>`;
 
         html += `
             <tr>
@@ -463,3 +511,4 @@ window.setFilter = setFilter;
 window.handleSearch = handleSearch;
 window.openPrescriptionModal = openPrescriptionModal;
 window.closeModal = closeModal;
+window.updateAppointmentStatus = updateAppointmentStatus;

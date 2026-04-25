@@ -551,6 +551,13 @@ html, body {
 }
 .action-btn i { width: 14px; height: 14px; }
 
+.action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .action-btn-primary {
   background: var(--clr-primary);
   color: #fff;
@@ -569,6 +576,24 @@ html, body {
 .action-btn-outline:hover {
   border-color: var(--clr-primary);
   color: var(--clr-primary);
+}
+
+.action-btn-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+.action-btn-success:hover {
+  background: #d1fae5;
+}
+
+.action-btn-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.action-btn-danger:hover {
+  background: #fee2e2;
 }
 
 /* Empty state */
