@@ -1,12 +1,15 @@
 // ── Fetch Operations ──────────────────────────────────────────────────────────
 
 async function fetchData(url) {
+    console.log(`[Admin] Fetching: ${url}`);
     try {
         const res = await fetch(url);
+        console.log(`[Admin] Response status: ${res.status}`);
         const result = await res.json();
+        console.log(`[Admin] JSON result:`, result);
         return result.success ? result.data : null;
     } catch (err) {
-        console.error(`Error fetching ${url}:`, err);
+        console.error(`[Admin] Error fetching ${url}:`, err);
         return null;
     }
 }
@@ -33,7 +36,11 @@ async function updateStatus(userId, status) {
 
 function animateCount(elementId, endValue) {
     const element = document.getElementById(elementId);
-    if (!element) return;
+    console.log(`[Admin] animateCount: ${elementId}, current: "${element?.textContent}", target: ${endValue}`);
+    if (!element) {
+        console.error(`[Admin] Element not found: ${elementId}`);
+        return;
+    }
     
     const startValue = parseInt(element.textContent) || 0;
     const duration = 500;
@@ -56,7 +63,11 @@ function animateCount(elementId, endValue) {
 
 async function renderStats() {
     const stats = await fetchData('backend/get_stats.php');
-    if (!stats) return;
+    console.log('[Admin] Stats response:', stats);
+    if (!stats) {
+        document.getElementById('summaryText').textContent = 'Error loading stats';
+        return;
+    }
 
     animateCount('totalDoctors', stats.totalDoctors);
     animateCount('totalPatients', stats.totalPatients);
@@ -69,6 +80,7 @@ async function renderStats() {
 
 async function renderPendingRequests() {
     const doctors = await fetchData('backend/get_pending_doctors.php');
+    console.log('[Admin] Pending doctors response:', doctors);
     const requestList = document.getElementById('requestList');
     if (!requestList) return;
     
@@ -99,14 +111,22 @@ async function renderPendingRequests() {
 }
 
 async function renderAllDoctors() {
+    console.log('[Admin] renderAllDoctors called');
     const doctors = await fetchData('backend/get_all_doctors.php');
+    console.log('[Admin] renderAllDoctors - doctors received:', doctors);
     const doctorList = document.getElementById('allDoctorList');
     const summary = document.getElementById('doctorListSummary');
-    if (!doctorList || !summary) return;
+    console.log('[Admin] doctorList element:', doctorList);
+    console.log('[Admin] summary element:', summary);
+    if (!doctorList || !summary) {
+        console.error('[Admin] Required elements not found!');
+        return;
+    }
 
     doctorList.innerHTML = '';
 
     if (!doctors || doctors.length === 0) {
+        console.log('[Admin] No doctors found - showing empty state');
         summary.textContent = 'No doctors found.';
         doctorList.innerHTML = '<li class="request-item"><p>No doctors registered yet.</p></li>';
         return;
@@ -198,6 +218,7 @@ function showPendingView() {
 }
 
 async function showAllDoctorsView() {
+    console.log('[Admin] showAllDoctorsView called');
     const requestList = document.getElementById('requestList');
     const allDoctorList = document.getElementById('allDoctorList');
     const allPatientList = document.getElementById('allPatientList');
@@ -245,6 +266,7 @@ async function showAllPatientsView() {
 
 function refreshDashboard() {
     renderStats();
+    renderPendingRequests(); // Add this to load pending requests on init
     const allDoctorList = document.getElementById('allDoctorList');
     const allPatientList = document.getElementById('allPatientList');
     if (allDoctorList && !allDoctorList.classList.contains('hidden')) {
