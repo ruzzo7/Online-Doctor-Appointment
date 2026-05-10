@@ -343,6 +343,9 @@ function renderAppointments() {
 
         const actionBtn = appt.status === 'upcoming'
             ? `<div class="action-group">
+                   <button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
+                       <i data-lucide="stethoscope"></i> Consult
+                   </button>
                    <button class="action-btn action-btn-success" onclick="updateAppointmentStatus(${appt.appointment_id}, 'accept')">
                        <i data-lucide="check"></i> Accept
                    </button>
@@ -350,13 +353,17 @@ function renderAppointments() {
                        <i data-lucide="x"></i> Reject
                    </button>
                </div>`
-            : appt.status === 'cancelled'
-                ? `<button class="action-btn action-btn-outline" disabled>
-                       <i data-lucide="x-circle"></i> Rejected
+            : appt.status === 'completed'
+                ? `<button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
+                       <i data-lucide="stethoscope"></i> View Consult
                    </button>`
-                : `<button class="action-btn action-btn-outline" disabled>
-                       <i data-lucide="check"></i> Done
-                   </button>`;
+                : appt.status === 'cancelled'
+                    ? `<button class="action-btn action-btn-outline" disabled>
+                           <i data-lucide="x-circle"></i> Rejected
+                       </button>`
+                    : `<button class="action-btn action-btn-outline" disabled>
+                           <i data-lucide="check"></i> Done
+                       </button>`;
 
         html += `
             <tr>
@@ -462,6 +469,153 @@ document.getElementById('prescriptionModal').addEventListener('click', (e) => {
 // Close on Escape
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
+});
+
+// ── Consultation Modal ────────────────────────────────────
+async function openConsultationModal(appointmentId, patientName, patientAge, patientEmail, patientPhone, reason, patientId) {
+    document.getElementById('consultAppointmentId').value = appointmentId;
+    document.getElementById('consultPatientId').value = patientId;
+    
+    // Set patient summary
+    document.getElementById('consultPatientName').textContent = patientName;
+    document.getElementById('consultPatientAge').textContent = patientAge ? `${patientAge} years` : 'N/A';
+    document.getElementById('consultPatientPhone').textContent = patientPhone || 'N/A';
+    document.getElementById('consultPatientReason').textContent = reason || 'No reason provided';
+    
+    // Set patient details
+    document.getElementById('consultDetailName').textContent = patientName;
+    document.getElementById('consultDetailEmail').textContent = patientEmail || 'N/A';
+    document.getElementById('consultDetailPhone').textContent = patientPhone || 'N/A';
+    document.getElementById('consultDetailAge').textContent = patientAge ? `${patientAge} years` : 'N/A';
+    
+    // Clear form
+    document.getElementById('consultSymptoms').value = '';
+    document.getElementById('consultObservations').value = '';
+    document.getElementById('consultNotes').value = '';
+    
+    // Reset status display
+    document.getElementById('consultStatusDisplay').textContent = 'Pending';
+    document.getElementById('consultStatusDisplay').className = 'status-badge status-pending';
+    document.getElementById('startConsultBtn').style.display = 'inline-flex';
+    document.getElementById('consultSubmitBtn').style.display = 'none';
+    
+    // Fetch patient details from backend
+    try {
+        const res = await fetch(`${API_BASE}/cosultation.php?action=get_patient_details&appointment_id=${appointmentId}`);
+        const result = await res.json();
+        if (result.success) {
+            console.log('[Consultation] Patient details loaded:', result.data);
+        }
+    } catch (err) {
+        console.error('Error fetching patient details:', err);
+    }
+    
+    document.getElementById('consultationModal').classList.add('active');
+}
+
+function closeConsultationModal() {
+    document.getElementById('consultationModal').classList.remove('active');
+}
+
+async function startConsultation() {
+    const appointmentId = document.getElementById('consultAppointmentId').value;
+    const patientId = document.getElementById('consultPatientId').value;
+    const consultationType = document.querySelector('input[name="consultationType"]:checked').value;
+    
+    const btn = document.getElementById('startConsultBtn');
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Starting...';
+    
+    try {
+        // For now, just show in-progress state
+        // Backend can be extended to track consultation state
+        document.getElementById('consultStatusDisplay').textContent = 'In Progress';
+        document.getElementById('consultStatusDisplay').className = 'status-badge status-in_progress';
+        document.getElementById('startConsultBtn').style.display = 'none';
+        document.getElementById('consultSubmitBtn').style.display = 'inline-flex';
+        showToast('Consultation started! Please add your notes below.', 'success');
+        
+    } catch (err) {
+        console.error('Error starting consultation:', err);
+        showToast('Error starting consultation', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = 'Start Consultation';
+    }
+}
+
+// ── Save Consultation ──────────────────────────────────────
+document.getElementById('consultationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const appointmentId = document.getElementById('consultAppointmentId').value;
+    const patientId = document.getElementById('consultPatientId').value;
+    const consultationType = document.querySelector('input[name="consultationType"]:checked').value;
+    const symptoms = document.getElementById('consultSymptoms').value.trim();
+    const observations = document.getElementById('consultObservations').value.trim();
+    const notes = document.getElementById('consultNotes').value.trim();
+    
+    if (!notes) {
+        showToast('Consultation notes are required', 'error');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('consultSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Completing...';
+    
+    try {
+        // Call backend to conduct consultation and save notes
+        const res = await fetch(`${API_BASE}/cosultation.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'conduct_consultation',
+                appointment_id: appointmentId,
+                consultation_type: consultationType,
+                consultation_notes: notes,
+                doctor_id: currentUser.id
+            })
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+            // Also save additional notes if backend supports it
+            if (symptoms || observations) {
+                const notesRes = await fetch(`${API_BASE}/cosultation.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_consultation_notes',
+                        appointment_id: appointmentId,
+                        consultation_type: consultationType,
+                        consultation_notes: notes,
+                        doctor_id: currentUser.id
+                    })
+                });
+                const notesResult = await notesRes.json();
+                console.log('Notes saved:', notesResult);
+            }
+            
+            showToast('Consultation completed successfully!', 'success');
+            closeConsultationModal();
+            fetchAppointments();
+        } else {
+            showToast(result.message || 'Failed to complete consultation', 'error');
+        }
+    } catch (err) {
+        console.error('Error completing consultation:', err);
+        showToast('Connection error. Please try again.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Complete Consultation';
+    }
+});
+
+// Close modal on overlay click
+document.getElementById('consultationModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeConsultationModal();
 });
 
 // ── Toast Notification ─────────────────────────────────────

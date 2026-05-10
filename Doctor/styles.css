@@ -860,6 +860,235 @@ html, body {
 .toast.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
 /* ═══════════════════════════════════════════════════════════
+   CONSULTATION STYLES
+═══════════════════════════════════════════════════════════ */
+.consultation-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.consultation-type-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.consultation-type-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.type-option-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.consultation-type-option input[type="radio"]:checked + .type-option-content {
+  border-color: var(--clr-primary);
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
+}
+
+.type-option-content i {
+  width: 28px;
+  height: 28px;
+  color: inherit;
+}
+
+.type-option-content span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.patient-details-card {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  word-break: break-all;
+}
+
+.status-display {
+  padding: 12px 14px;
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.status-label {
+  font-weight: 600;
+  color: var(--text-mid);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-in_progress {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: var(--text-dark);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  border-color: var(--text-soft);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff;
+  color: var(--text-mid);
+}
+
+.action-btn i {
+  width: 14px;
+  height: 14px;
+}
+
+.action-btn:hover {
+  background: #f8fafc;
+  border-color: var(--text-soft);
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-btn-primary {
+  background: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary);
+}
+
+.action-btn-primary:hover {
+  background: var(--clr-primary-dark);
+  border-color: var(--clr-primary-dark);
+}
+
+.action-btn-success {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.action-btn-success:hover {
+  background: #a7f3d0;
+  border-color: #34d399;
+}
+
+.action-btn-danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.action-btn-danger:hover {
+  background: #fecaca;
+  border-color: #f87171;
+}
+
+.action-btn-outline {
+  background: transparent;
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════
    DASHBOARD SECTION VISIBILITY
 ═══════════════════════════════════════════════════════════ */
 .dashboard-section { display: none; }

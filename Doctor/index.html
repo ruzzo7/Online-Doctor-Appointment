@@ -238,6 +238,127 @@
         </div>
     </div>
 
+    <!-- ═══ CONSULTATION MODAL ═══ -->
+    <div class="modal-overlay" id="consultationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-icon"><i data-lucide="stethoscope"></i></div>
+                    <div>
+                        <div class="modal-title">Conduct Consultation</div>
+                        <div class="modal-subtitle">Provide consultation to the patient</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeConsultationModal()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="patient-summary" id="consultationPatientSummary">
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Patient</span>
+                    <span class="patient-summary-value" id="consultPatientName">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Age</span>
+                    <span class="patient-summary-value" id="consultPatientAge">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Reason</span>
+                    <span class="patient-summary-value" id="consultPatientReason">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Phone</span>
+                    <span class="patient-summary-value" id="consultPatientPhone">—</span>
+                </div>
+            </div>
+
+            <form id="consultationForm">
+                <div class="modal-body">
+                    <input type="hidden" id="consultAppointmentId">
+                    <input type="hidden" id="consultPatientId">
+                    <input type="hidden" id="consultConsultationId">
+
+                    <!-- Consultation Type Selection -->
+                    <div class="form-group">
+                        <label>Consultation Type *</label>
+                        <div class="consultation-type-selector">
+                            <label class="consultation-type-option">
+                                <input type="radio" name="consultationType" value="online" checked>
+                                <div class="type-option-content">
+                                    <i data-lucide="video"></i>
+                                    <span>Online</span>
+                                </div>
+                            </label>
+                            <label class="consultation-type-option">
+                                <input type="radio" name="consultationType" value="offline">
+                                <div class="type-option-content">
+                                    <i data-lucide="map-pin"></i>
+                                    <span>Offline</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Patient Details Card -->
+                    <div class="patient-details-card">
+                        <div class="section-title">Patient Details</div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Full Name</span>
+                                <span class="detail-value" id="consultDetailName">—</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email</span>
+                                <span class="detail-value" id="consultDetailEmail">—</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Phone</span>
+                                <span class="detail-value" id="consultDetailPhone">—</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Age</span>
+                                <span class="detail-value" id="consultDetailAge">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consultation Notes -->
+                    <div class="form-group">
+                        <label for="consultSymptoms">Symptoms</label>
+                        <textarea id="consultSymptoms" placeholder="Describe patient's symptoms..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="consultObservations">Observations</label>
+                        <textarea id="consultObservations" placeholder="Clinical observations and findings..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="consultNotes">Consultation Notes *</label>
+                        <textarea id="consultNotes" placeholder="Detailed consultation notes and recommendations..." required></textarea>
+                    </div>
+
+                    <!-- Consultation Status -->
+                    <div class="status-display">
+                        <span class="status-label">Consultation Status:</span>
+                        <span class="status-badge" id="consultStatusDisplay">Pending</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeConsultationModal()">Cancel</button>
+                    <button type="button" class="btn btn-secondary" id="startConsultBtn" onclick="startConsultation()">
+                        <i data-lucide="play"></i>
+                        <span>Start Consultation</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="consultSubmitBtn" style="display:none;">
+                        <i data-lucide="check"></i>
+                        <span>Complete Consultation</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ═══ PRESCRIPTION MODAL ═══ -->
     <div class="modal-overlay" id="prescriptionModal">
         <div class="modal">
