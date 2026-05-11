@@ -20,21 +20,44 @@ function ensureColumnExists(PDO $pdo, string $table, string $column, string $def
     }
 }
 
+function ensureTableIsHealthy(PDO $pdo, string $table, string $createSql): void
+{
+    try {
+        $pdo->query("SELECT 1 FROM `{$table}` LIMIT 1");
+    } catch (PDOException $e) {
+        $message = $e->getMessage();
+        $isBrokenMetadata = strpos($message, "doesn't exist in engine") !== false
+            || strpos($message, 'Base table or view not found') !== false;
+
+        if (!$isBrokenMetadata) {
+            throw $e;
+        }
+
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        $pdo->exec("DROP TABLE IF EXISTS `{$table}`");
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+        $pdo->exec($createSql);
+    }
+}
+
 function bootstrapDatabase(PDO $pdo, string $dbName): void
 {
     $pdo->exec("CREATE DATABASE IF NOT EXISTS {$dbName} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     $pdo->exec("USE {$dbName}");
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+    $usersTableSql = "CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role ENUM('admin', 'doctor', 'patient') NOT NULL,
         status ENUM('pending', 'active', 'rejected') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS doctor_profiles (
+    $pdo->exec($usersTableSql);
+    ensureTableIsHealthy($pdo, 'users', $usersTableSql);
+
+    $doctorProfilesTableSql = "CREATE TABLE IF NOT EXISTS doctor_profiles (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         full_name VARCHAR(255) NOT NULL,
@@ -47,22 +70,28 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
         available_to TIME,
         bio TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+    $pdo->exec($doctorProfilesTableSql);
+    ensureTableIsHealthy($pdo, 'doctor_profiles', $doctorProfilesTableSql);
 
     ensureColumnExists($pdo, 'doctor_profiles', 'consultation_fee', 'DECIMAL(10,2) NULL');
     ensureColumnExists($pdo, 'doctor_profiles', 'available_from', 'TIME NULL');
     ensureColumnExists($pdo, 'doctor_profiles', 'available_to', 'TIME NULL');
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS patient_profiles (
+    $patientProfilesTableSql = "CREATE TABLE IF NOT EXISTS patient_profiles (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         full_name VARCHAR(255) NOT NULL,
         phone VARCHAR(20),
         age INT,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS appointments (
+    $pdo->exec($patientProfilesTableSql);
+    ensureTableIsHealthy($pdo, 'patient_profiles', $patientProfilesTableSql);
+
+    $appointmentsTableSql = "CREATE TABLE IF NOT EXISTS appointments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         doctor_id INT NOT NULL,
         patient_id INT NOT NULL,
@@ -72,9 +101,12 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS prescriptions (
+    $pdo->exec($appointmentsTableSql);
+    ensureTableIsHealthy($pdo, 'appointments', $appointmentsTableSql);
+
+    $prescriptionsTableSql = "CREATE TABLE IF NOT EXISTS prescriptions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         appointment_id INT NOT NULL,
         doctor_id INT NOT NULL,
@@ -87,7 +119,10 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
         FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
         FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+    $pdo->exec($prescriptionsTableSql);
+    ensureTableIsHealthy($pdo, 'prescriptions', $prescriptionsTableSql);
 
     // Seed defaults only when they do not exist.
     $seedUsers = [
@@ -149,11 +184,52 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
     }
 }
 
+function bootstrapDatabaseWithRecovery(PDO $pdo, string $dbName): void
+{
+    try {
+        bootstrapDatabase($pdo, $dbName);
+    } catch (PDOException $e) {
+        $message = $e->getMessage();
+        $canRebuild = strpos($message, 'Tablespace for table') !== false
+            || strpos($message, "doesn't exist in engine") !== false
+            || strpos($message, 'Base table or view not found') !== false;
+
+        if (!$canRebuild) {
+            throw $e;
+        }
+
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        $pdo->exec("DROP DATABASE IF EXISTS `{$dbName}`");
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+
+        // Recreate everything from a clean slate for local/dev reliability.
+        bootstrapDatabase($pdo, $dbName);
+    }
+}
+
 try {
     $serverDsn = "mysql:host=$host;charset=$charset";
     $pdo = new PDO($serverDsn, $user, $pass, $options);
-    bootstrapDatabase($pdo, $db);
-    $pdo->exec("USE {$db}");
+
+    $activeDb = $db;
+    try {
+        bootstrapDatabaseWithRecovery($pdo, $activeDb);
+    } catch (PDOException $e) {
+        $message = $e->getMessage();
+        $cannotDropBrokenDb = strpos($message, 'Error dropping database') !== false
+            || strpos($message, "can't rmdir") !== false;
+
+        if (!$cannotDropBrokenDb) {
+            throw $e;
+        }
+
+        // Use a clean fallback DB name when the old database folder is unrecoverable.
+        $activeDb = $db . '_recovered';
+        bootstrapDatabaseWithRecovery($pdo, $activeDb);
+    }
+
+    $db = $activeDb;
+    $pdo->exec("USE `{$db}`");
 } catch (PDOException $e) {
     header('Content-Type: application/json');
     echo json_encode([
