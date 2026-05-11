@@ -258,6 +258,21 @@ body {
     color: var(--red);
 }
 
+.badge-upcoming {
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.badge-completed {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.badge-cancelled {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
 .badge-active {
     background: var(--green-soft);
     color: var(--green);
@@ -307,6 +322,41 @@ body {
     box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.08);
 }
 
+.appointment-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.appointment-filters .field-item {
+    display: grid;
+    gap: 6px;
+}
+
+.appointment-filters label {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.appointment-filters input,
+.appointment-filters select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+}
+
+.appointment-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
 @media (max-width: 960px) {
     .stats {
         grid-template-columns: repeat(2, minmax(160px, 1fr));
@@ -314,6 +364,10 @@ body {
 
     .main-grid {
         grid-template-columns: 1fr;
+    }
+
+    .appointment-filters {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
     }
 }
 
@@ -323,6 +377,10 @@ body {
     }
 
     .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment-filters {
         grid-template-columns: 1fr;
     }
 }

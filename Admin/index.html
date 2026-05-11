@@ -63,6 +63,12 @@
                         <p>View and maintain patient records and accounts.</p>
                         <button type="button" class="btn btn-secondary" id="openPatientsBtn">Open Patients</button>
                     </article>
+
+                    <article class="action-card">
+                        <h4><i data-lucide="calendar-check-2"></i> Manage Appointments</h4>
+                        <p>View all appointments, apply filters, and cancel if needed.</p>
+                        <button type="button" class="btn btn-secondary" id="openAppointmentsBtn">Open Appointments</button>
+                    </article>
                 </div>
 
                 <div class="section-title" style="margin-top: 40px;">
@@ -107,6 +113,42 @@
 
             <div id="patientListSummary" class="doctor-summary"></div>
             <ul id="allPatientList" class="request-list"></ul>
+        </section>
+
+        <section id="appointmentPanel" class="panel hidden" style="margin-top: 12px;">
+            <div class="section-title" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div>
+                    <h3>All Appointments</h3>
+                    <p>Track every booking, filter by date/doctor/patient, and cancel when required.</p>
+                </div>
+                <button type="button" class="btn btn-secondary" id="refreshAppointmentsBtn"><i data-lucide="refresh-ccw"></i> Refresh Appointments</button>
+            </div>
+
+            <div class="appointment-filters">
+                <div class="field-item">
+                    <label for="filterAppointmentDate">Date</label>
+                    <input type="date" id="filterAppointmentDate" name="filterAppointmentDate">
+                </div>
+                <div class="field-item">
+                    <label for="filterAppointmentDoctor">Doctor</label>
+                    <select id="filterAppointmentDoctor" name="filterAppointmentDoctor">
+                        <option value="">All doctors</option>
+                    </select>
+                </div>
+                <div class="field-item">
+                    <label for="filterAppointmentPatient">Patient</label>
+                    <select id="filterAppointmentPatient" name="filterAppointmentPatient">
+                        <option value="">All patients</option>
+                    </select>
+                </div>
+                <div class="appointment-filter-actions">
+                    <button type="button" class="btn btn-secondary" id="applyAppointmentFiltersBtn">Apply Filters</button>
+                    <button type="button" class="btn btn-danger" id="clearAppointmentFiltersBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="appointmentListSummary" class="doctor-summary"></div>
+            <ul id="allAppointmentList" class="request-list"></ul>
         </section>
     </div>
     <script src="script.js"></script>
