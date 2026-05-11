@@ -357,6 +357,90 @@ body {
     flex-wrap: wrap;
 }
 
+.specialty-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: end;
+}
+
+.specialty-form .field-item {
+    display: grid;
+    gap: 6px;
+}
+
+.specialty-form label {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.specialty-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+}
+
+.specialty-form-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.doctor-profile-editor {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.doctor-profile-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.doctor-profile-form .field-item {
+    display: grid;
+    gap: 6px;
+}
+
+.doctor-profile-form label {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.doctor-profile-form input,
+.doctor-profile-form select,
+.doctor-profile-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+}
+
+.doctor-profile-form input[readonly] {
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.doctor-profile-form .full-row {
+    grid-column: 1 / -1;
+}
+
+.doctor-profile-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 @media (max-width: 960px) {
     .stats {
         grid-template-columns: repeat(2, minmax(160px, 1fr));
@@ -368,6 +452,14 @@ body {
 
     .appointment-filters {
         grid-template-columns: repeat(2, minmax(160px, 1fr));
+    }
+
+    .specialty-form {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-profile-form {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -382,6 +474,10 @@ body {
 
     .appointment-filters {
         grid-template-columns: 1fr;
+    }
+
+    .specialty-form-actions {
+        width: 100%;
     }
 }
 /* Validation Styles */

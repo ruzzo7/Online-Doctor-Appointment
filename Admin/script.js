@@ -166,12 +166,150 @@ async function renderAllDoctors() {
             </div>
             <span class="badge badge-${doc.status}">${doc.status}</span>
             <div class="request-actions">
-                ${doc.status !== 'active' ? `<button type="button" class="btn btn-secondary" onclick="updateStatus(${doc.id}, 'active')">Approve</button>` : ''}
-                ${doc.status !== 'rejected' ? `<button type="button" class="btn btn-danger" onclick="updateStatus(${doc.id}, 'rejected')">Reject</button>` : ''}
+                <button type="button" class="btn btn-secondary view-doctor-profile-btn">View Profile</button>
+                ${doc.status !== 'active' ? '<button type="button" class="btn btn-secondary approve-doctor-btn">Approve</button>' : ''}
+                ${doc.status !== 'rejected' ? '<button type="button" class="btn btn-danger reject-doctor-btn">Reject</button>' : ''}
             </div>
         `;
+
+        const viewBtn = item.querySelector('.view-doctor-profile-btn');
+        const approveBtn = item.querySelector('.approve-doctor-btn');
+        const rejectBtn = item.querySelector('.reject-doctor-btn');
+
+        if (viewBtn) {
+            viewBtn.addEventListener('click', () => {
+                openDoctorProfile(doc.id);
+            });
+        }
+
+        if (approveBtn) {
+            approveBtn.addEventListener('click', () => {
+                updateStatus(doc.id, 'active');
+            });
+        }
+
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', () => {
+                updateStatus(doc.id, 'rejected');
+            });
+        }
+
         doctorList.appendChild(item);
     });
+}
+
+async function populateDoctorSpecializationOptions(selectedSpecialization = '') {
+    const specializationSelect = document.getElementById('doctorSpecialization');
+    if (!specializationSelect) return;
+
+    const specialties = await fetchData('backend/get_specialties.php');
+    specializationSelect.innerHTML = '<option value="">Select specialty</option>';
+
+    (specialties || []).forEach((specialty) => {
+        const option = document.createElement('option');
+        option.value = specialty.name;
+        option.textContent = specialty.name;
+        specializationSelect.appendChild(option);
+    });
+
+    const hasSelected = selectedSpecialization && (specialties || []).some(s => s.name === selectedSpecialization);
+    if (selectedSpecialization && !hasSelected) {
+        const option = document.createElement('option');
+        option.value = selectedSpecialization;
+        option.textContent = `${selectedSpecialization} (custom)`;
+        specializationSelect.appendChild(option);
+    }
+
+    specializationSelect.value = selectedSpecialization || '';
+}
+
+function hideDoctorProfileEditor() {
+    const editor = document.getElementById('doctorProfileEditor');
+    const form = document.getElementById('doctorProfileForm');
+    const selectedDoctorId = document.getElementById('selectedDoctorId');
+    if (editor) editor.classList.add('hidden');
+    if (form) form.reset();
+    if (selectedDoctorId) selectedDoctorId.value = '';
+}
+
+function showDoctorProfileEditor() {
+    const editor = document.getElementById('doctorProfileEditor');
+    if (editor) editor.classList.remove('hidden');
+}
+
+async function openDoctorProfile(doctorId) {
+    const result = await postData('backend/get_doctor_profile.php', { user_id: Number(doctorId) });
+    if (!result.success || !result.data) {
+        alert(result.message || 'Unable to load doctor profile');
+        return;
+    }
+
+    const profile = result.data;
+    const selectedDoctorId = document.getElementById('selectedDoctorId');
+    const doctorEmail = document.getElementById('doctorEmail');
+    const doctorLicense = document.getElementById('doctorLicense');
+    const doctorFullName = document.getElementById('doctorFullName');
+    const doctorExperience = document.getElementById('doctorExperience');
+    const doctorFee = document.getElementById('doctorFee');
+    const doctorHospital = document.getElementById('doctorHospital');
+    const doctorAvailableFrom = document.getElementById('doctorAvailableFrom');
+    const doctorAvailableTo = document.getElementById('doctorAvailableTo');
+    const doctorBio = document.getElementById('doctorBio');
+
+    if (selectedDoctorId) selectedDoctorId.value = String(profile.id || doctorId);
+    if (doctorEmail) doctorEmail.value = profile.email || '';
+    if (doctorLicense) doctorLicense.value = profile.license_number || '';
+    if (doctorFullName) doctorFullName.value = profile.full_name || '';
+    if (doctorExperience) doctorExperience.value = String(profile.experience ?? 0);
+    if (doctorFee) doctorFee.value = profile.consultation_fee ?? '';
+    if (doctorHospital) doctorHospital.value = profile.hospital || '';
+    if (doctorAvailableFrom) doctorAvailableFrom.value = (profile.available_from || '').slice(0, 5);
+    if (doctorAvailableTo) doctorAvailableTo.value = (profile.available_to || '').slice(0, 5);
+    if (doctorBio) doctorBio.value = profile.bio || '';
+
+    await populateDoctorSpecializationOptions(profile.specialization || '');
+    showDoctorProfileEditor();
+    document.getElementById('doctorProfileEditor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function saveDoctorProfileFromAdmin() {
+    const selectedDoctorId = document.getElementById('selectedDoctorId');
+    const doctorFullName = document.getElementById('doctorFullName');
+    const doctorSpecialization = document.getElementById('doctorSpecialization');
+    const doctorExperience = document.getElementById('doctorExperience');
+    const doctorFee = document.getElementById('doctorFee');
+    const doctorHospital = document.getElementById('doctorHospital');
+    const doctorAvailableFrom = document.getElementById('doctorAvailableFrom');
+    const doctorAvailableTo = document.getElementById('doctorAvailableTo');
+    const doctorBio = document.getElementById('doctorBio');
+
+    const doctorId = Number(selectedDoctorId?.value || 0);
+    if (!doctorId) {
+        alert('Select a doctor profile first');
+        return;
+    }
+
+    const payload = {
+        user_id: doctorId,
+        full_name: doctorFullName?.value.trim() || '',
+        specialization: doctorSpecialization?.value.trim() || '',
+        experience: Number(doctorExperience?.value || 0),
+        consultation_fee: doctorFee?.value ?? '',
+        hospital: doctorHospital?.value.trim() || '',
+        available_from: doctorAvailableFrom?.value || '',
+        available_to: doctorAvailableTo?.value || '',
+        bio: doctorBio?.value.trim() || ''
+    };
+
+    const result = await postData('backend/update_doctor_profile.php', payload);
+    if (!result.success) {
+        alert(result.message || 'Failed to update doctor profile');
+        return;
+    }
+
+    alert('Doctor profile updated successfully');
+    await renderAllDoctors();
+    await openDoctorProfile(doctorId);
 }
 
 async function renderAllPatients() {
@@ -315,6 +453,130 @@ async function cancelAppointment(appointmentId) {
     await showAllAppointmentsView();
 }
 
+function resetSpecialtyForm() {
+    const idInput = document.getElementById('specialtyId');
+    const nameInput = document.getElementById('specialtyName');
+    const descInput = document.getElementById('specialtyDescription');
+    const saveBtn = document.getElementById('saveSpecialtyBtn');
+
+    if (idInput) idInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (descInput) descInput.value = '';
+    if (saveBtn) saveBtn.textContent = 'Add Specialty';
+}
+
+function startEditSpecialty(id, name, description) {
+    const idInput = document.getElementById('specialtyId');
+    const nameInput = document.getElementById('specialtyName');
+    const descInput = document.getElementById('specialtyDescription');
+    const saveBtn = document.getElementById('saveSpecialtyBtn');
+
+    if (idInput) idInput.value = String(id);
+    if (nameInput) nameInput.value = String(name || '');
+    if (descInput) descInput.value = String(description || '');
+    if (saveBtn) saveBtn.textContent = 'Update Specialty';
+    nameInput?.focus();
+}
+
+async function renderSpecialties() {
+    const list = document.getElementById('allSpecialtyList');
+    const summary = document.getElementById('specialtyListSummary');
+    if (!list || !summary) return;
+
+    const specialties = await fetchData('backend/get_specialties.php');
+    list.innerHTML = '';
+
+    if (!specialties || specialties.length === 0) {
+        summary.textContent = 'No specialties available yet.';
+        list.innerHTML = '<li class="request-item"><p>No specialties found.</p></li>';
+        return;
+    }
+
+    summary.textContent = `${specialties.length} specialties available`;
+
+    specialties.forEach((specialty) => {
+        const item = document.createElement('li');
+        item.className = 'request-item';
+        item.innerHTML = `
+            <div>
+                <h4>${escapeHtml(specialty.name)}</h4>
+                <p>${escapeHtml(specialty.description || 'No description')}</p>
+                <small style="color: #64748b;">Created: ${new Date(specialty.created_at).toLocaleDateString()}</small>
+            </div>
+            <div class="request-actions">
+                <button type="button" class="btn btn-secondary edit-specialty-btn">Edit</button>
+                <button type="button" class="btn btn-danger delete-specialty-btn">Delete</button>
+            </div>
+        `;
+
+        const editBtn = item.querySelector('.edit-specialty-btn');
+        const deleteBtn = item.querySelector('.delete-specialty-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => {
+                startEditSpecialty(specialty.id, specialty.name, specialty.description || '');
+            });
+        }
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                deleteSpecialty(specialty.id);
+            });
+        }
+
+        list.appendChild(item);
+    });
+}
+
+async function saveSpecialtyFromForm() {
+    const idInput = document.getElementById('specialtyId');
+    const nameInput = document.getElementById('specialtyName');
+    const descInput = document.getElementById('specialtyDescription');
+    if (!idInput || !nameInput || !descInput) return;
+
+    const specialtyId = Number(idInput.value || 0);
+    const name = nameInput.value.trim();
+    const description = descInput.value.trim();
+
+    if (!name) {
+        alert('Specialty name is required');
+        nameInput.focus();
+        return;
+    }
+
+    const endpoint = specialtyId > 0 ? 'backend/update_specialty.php' : 'backend/add_specialty.php';
+    const payload = specialtyId > 0
+        ? { id: specialtyId, name, description }
+        : { name, description };
+
+    const result = await postData(endpoint, payload);
+    if (!result.success) {
+        alert(result.message || 'Failed to save specialty');
+        return;
+    }
+
+    resetSpecialtyForm();
+    await renderSpecialties();
+}
+
+async function deleteSpecialty(id) {
+    const specialtyId = Number(id);
+    if (!Number.isInteger(specialtyId) || specialtyId <= 0) {
+        alert('Invalid specialty ID');
+        return;
+    }
+
+    const shouldDelete = confirm('Delete this specialty? This cannot be undone.');
+    if (!shouldDelete) return;
+
+    const result = await postData('backend/delete_specialty.php', { id: specialtyId });
+    if (!result.success) {
+        alert(result.message || 'Failed to delete specialty');
+        return;
+    }
+
+    resetSpecialtyForm();
+    await renderSpecialties();
+}
+
 function showPendingView() {
     currentAdminView = 'pending';
     const requestList = document.getElementById('requestList');
@@ -327,6 +589,7 @@ function showPendingView() {
     const panel = document.getElementById('doctorPanel');
     const patientPanel = document.getElementById('patientPanel');
     const appointmentPanel = document.getElementById('appointmentPanel');
+    const specialtyPanel = document.getElementById('specialtyPanel');
 
     if (requestList) requestList.classList.remove('hidden');
     if (allDoctorList) allDoctorList.classList.add('hidden');
@@ -338,6 +601,8 @@ function showPendingView() {
     if (panel) panel.classList.remove('is-active');
     if (patientPanel) patientPanel.classList.add('hidden');
     if (appointmentPanel) appointmentPanel.classList.add('hidden');
+    if (specialtyPanel) specialtyPanel.classList.add('hidden');
+    hideDoctorProfileEditor();
     renderPendingRequests();
 }
 
@@ -354,6 +619,7 @@ async function showAllDoctorsView() {
     const panel = document.getElementById('doctorPanel');
     const patientPanel = document.getElementById('patientPanel');
     const appointmentPanel = document.getElementById('appointmentPanel');
+    const specialtyPanel = document.getElementById('specialtyPanel');
 
     if (requestList) requestList.classList.add('hidden');
     if (allDoctorList) allDoctorList.classList.remove('hidden');
@@ -365,6 +631,8 @@ async function showAllDoctorsView() {
     if (panel) panel.classList.add('is-active');
     if (patientPanel) patientPanel.classList.add('hidden');
     if (appointmentPanel) appointmentPanel.classList.add('hidden');
+    if (specialtyPanel) specialtyPanel.classList.add('hidden');
+    hideDoctorProfileEditor();
     await renderAllDoctors();
 }
 
@@ -380,6 +648,7 @@ async function showAllPatientsView() {
     const panel = document.getElementById('doctorPanel');
     const patientPanel = document.getElementById('patientPanel');
     const appointmentPanel = document.getElementById('appointmentPanel');
+    const specialtyPanel = document.getElementById('specialtyPanel');
 
     if (requestList) requestList.classList.add('hidden');
     if (allDoctorList) allDoctorList.classList.add('hidden');
@@ -391,6 +660,8 @@ async function showAllPatientsView() {
     if (panel) panel.classList.remove('is-active');
     if (patientPanel) patientPanel.classList.remove('hidden');
     if (appointmentPanel) appointmentPanel.classList.add('hidden');
+    if (specialtyPanel) specialtyPanel.classList.add('hidden');
+    hideDoctorProfileEditor();
     await renderAllPatients();
 }
 
@@ -404,6 +675,7 @@ async function showAllAppointmentsView() {
     const panel = document.getElementById('doctorPanel');
     const patientPanel = document.getElementById('patientPanel');
     const appointmentPanel = document.getElementById('appointmentPanel');
+    const specialtyPanel = document.getElementById('specialtyPanel');
 
     if (requestList) requestList.classList.add('hidden');
     if (allDoctorList) allDoctorList.classList.add('hidden');
@@ -413,9 +685,38 @@ async function showAllAppointmentsView() {
     if (panel) panel.classList.remove('is-active');
     if (patientPanel) patientPanel.classList.add('hidden');
     if (appointmentPanel) appointmentPanel.classList.remove('hidden');
+    if (specialtyPanel) specialtyPanel.classList.add('hidden');
+    hideDoctorProfileEditor();
 
     await populateAppointmentFilterOptions();
     await renderAllAppointments();
+}
+
+async function showSpecialtiesView() {
+    currentAdminView = 'specialties';
+    const requestList = document.getElementById('requestList');
+    const allDoctorList = document.getElementById('allDoctorList');
+    const allPatientList = document.getElementById('allPatientList');
+    const summary = document.getElementById('doctorListSummary');
+    const patientSummary = document.getElementById('patientListSummary');
+    const panel = document.getElementById('doctorPanel');
+    const patientPanel = document.getElementById('patientPanel');
+    const appointmentPanel = document.getElementById('appointmentPanel');
+    const specialtyPanel = document.getElementById('specialtyPanel');
+
+    if (requestList) requestList.classList.add('hidden');
+    if (allDoctorList) allDoctorList.classList.add('hidden');
+    if (summary) summary.classList.add('hidden');
+    if (allPatientList) allPatientList.classList.add('hidden');
+    if (patientSummary) patientSummary.classList.add('hidden');
+    if (panel) panel.classList.remove('is-active');
+    if (patientPanel) patientPanel.classList.add('hidden');
+    if (appointmentPanel) appointmentPanel.classList.add('hidden');
+    if (specialtyPanel) specialtyPanel.classList.remove('hidden');
+    hideDoctorProfileEditor();
+
+    resetSpecialtyForm();
+    await renderSpecialties();
 }
 
 function refreshDashboard() {
@@ -433,6 +734,11 @@ function refreshDashboard() {
 
     if (currentAdminView === 'appointments') {
         showAllAppointmentsView();
+        return;
+    }
+
+    if (currentAdminView === 'specialties') {
+        showSpecialtiesView();
         return;
     }
 
@@ -501,6 +807,19 @@ function attachInteractions() {
         refreshDoctorsBtn.addEventListener('click', showAllDoctorsView);
     }
 
+    const doctorProfileForm = document.getElementById('doctorProfileForm');
+    if (doctorProfileForm) {
+        doctorProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveDoctorProfileFromAdmin();
+        });
+    }
+
+    const closeDoctorProfileBtn = document.getElementById('closeDoctorProfileBtn');
+    if (closeDoctorProfileBtn) {
+        closeDoctorProfileBtn.addEventListener('click', hideDoctorProfileEditor);
+    }
+
     const openPatientsBtn = document.getElementById('openPatientsBtn');
     if (openPatientsBtn) {
         openPatientsBtn.addEventListener('click', () => {
@@ -543,6 +862,32 @@ function attachInteractions() {
             if (patientFilter) patientFilter.value = '';
             await renderAllAppointments();
         });
+    }
+
+    const openSpecialtiesBtn = document.getElementById('openSpecialtiesBtn');
+    if (openSpecialtiesBtn) {
+        openSpecialtiesBtn.addEventListener('click', () => {
+            showSpecialtiesView();
+            document.getElementById('specialtyPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    const refreshSpecialtiesBtn = document.getElementById('refreshSpecialtiesBtn');
+    if (refreshSpecialtiesBtn) {
+        refreshSpecialtiesBtn.addEventListener('click', showSpecialtiesView);
+    }
+
+    const specialtyForm = document.getElementById('specialtyForm');
+    if (specialtyForm) {
+        specialtyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveSpecialtyFromForm();
+        });
+    }
+
+    const cancelSpecialtyEditBtn = document.getElementById('cancelSpecialtyEditBtn');
+    if (cancelSpecialtyEditBtn) {
+        cancelSpecialtyEditBtn.addEventListener('click', resetSpecialtyForm);
     }
 }
 
