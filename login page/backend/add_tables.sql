@@ -36,6 +36,17 @@ CREATE TABLE IF NOT EXISTS `prescriptions` (
   FOREIGN KEY (`patient_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: specialties
+CREATE TABLE IF NOT EXISTS `specialties` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ═══════════════════════════════════════════════════════════
 -- Mock Patient Data (if not already present)
 -- ═══════════════════════════════════════════════════════════

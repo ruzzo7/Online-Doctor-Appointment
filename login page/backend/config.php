@@ -124,6 +124,14 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
     $pdo->exec($prescriptionsTableSql);
     ensureTableIsHealthy($pdo, 'prescriptions', $prescriptionsTableSql);
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS specialties (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     // Seed defaults only when they do not exist.
     $seedUsers = [
         ['email' => 'admin@gmail.com',   'password' => 'admin123',   'role' => 'admin',   'status' => 'active'],
