@@ -47,6 +47,25 @@ CREATE TABLE IF NOT EXISTS `specialties` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: notifications (for patient alerts)
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `patient_id` int(11) NOT NULL,
+  `appointment_id` int(11),
+  `type` enum('appointment_approved','appointment_cancelled','appointment_reminder') DEFAULT 'appointment_reminder',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `days_until_appointment` int(11),
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`patient_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`appointment_id`) REFERENCES `appointments`(`id`) ON DELETE CASCADE,
+  KEY `patient_id_index` (`patient_id`),
+  KEY `created_at_index` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ═══════════════════════════════════════════════════════════
 -- Mock Patient Data (if not already present)
 -- ═══════════════════════════════════════════════════════════
