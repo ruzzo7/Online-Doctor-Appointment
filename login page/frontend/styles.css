@@ -62,9 +62,34 @@ html, body {
   transition: background 0.6s ease;
 }
 
-body[data-role="doctor"]  .left-panel { background: linear-gradient(145deg, #1e3a8a 0%, #1e1b4b 55%, #0c1445 100%); }
-body[data-role="patient"] .left-panel { background: linear-gradient(145deg, #064e3b 0%, #065f46 55%, #022c22 100%); }
-body[data-role="admin"]   .left-panel { background: linear-gradient(145deg, #3b0764 0%, #4c1d95 55%, #1e1b4b 100%); }
+body[data-role="doctor"]  .left-panel {
+  background-image: url('../../photos/Doctor.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-color: #08142b;
+}
+body[data-role="patient"] .left-panel {
+  background-image: url('../../photos/Patient.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-color: #08142b;
+}
+body[data-role="admin"]   .left-panel {
+  background-image: url('../../photos/Admin.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-color: #08142b;
+}
+
+.left-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 17, 38, 0.15);
+  pointer-events: none;
+}
 
 /* Animated blobs */
 .blob {
