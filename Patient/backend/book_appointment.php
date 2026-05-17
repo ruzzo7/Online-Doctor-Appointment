@@ -92,7 +92,7 @@ try {
         exit;
     }
 
-    $insertStmt = $pdo->prepare("INSERT INTO appointments (doctor_id, patient_id, appointment_date, reason, status) VALUES (?, ?, ?, ?, 'upcoming')");
+    $insertStmt = $pdo->prepare("INSERT INTO appointments (doctor_id, patient_id, appointment_date, reason, status) VALUES (?, ?, ?, ?, 'pending')");
     $insertStmt->execute([
         $doctorId,
         $patientId,

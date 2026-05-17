@@ -362,19 +362,22 @@ function renderAppointments() {
         const reason = appt.reason || 'No reason provided';
         const truncatedReason = reason.length > 45 ? reason.substring(0, 45) + '…' : reason;
 
-        const actionBtn = appt.status === 'upcoming'
+        const actionBtn = appt.status === 'pending'
             ? `<div class="action-group">
-                   <button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
-                       <i data-lucide="stethoscope"></i> Consult
-                   </button>
-                   <button class="action-btn action-btn-outline" onclick="openMedicalRecordModal(${appt.appointment_id}, ${appt.patient_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}')">
-                       <i data-lucide="folder-plus"></i> Record
-                   </button>
                    <button class="action-btn action-btn-success" onclick="updateAppointmentStatus(${appt.appointment_id}, 'accept')">
                        <i data-lucide="check"></i> Accept
                    </button>
                    <button class="action-btn action-btn-danger" onclick="updateAppointmentStatus(${appt.appointment_id}, 'reject')">
                        <i data-lucide="x"></i> Reject
+                   </button>
+               </div>`
+            : appt.status === 'upcoming'
+                ? `<div class="action-group">
+                   <button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
+                       <i data-lucide="stethoscope"></i> Consult
+                   </button>
+                   <button class="action-btn action-btn-outline" onclick="openMedicalRecordModal(${appt.appointment_id}, ${appt.patient_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}')">
+                       <i data-lucide="folder-plus"></i> Record
                    </button>
                </div>`
             : appt.status === 'completed'

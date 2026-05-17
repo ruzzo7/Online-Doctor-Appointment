@@ -46,6 +46,7 @@ try {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )");
 
+
     // Sample users
     $users = [
         ['email' => 'admin@gmail.com',  'password' => 'admin123',  'role' => 'admin',   'status' => 'active'],

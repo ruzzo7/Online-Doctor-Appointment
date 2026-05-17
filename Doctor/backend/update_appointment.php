@@ -50,6 +50,24 @@ try {
 
 	$updateStmt = $pdo->prepare("UPDATE appointments SET status = ? WHERE id = ? AND doctor_id = ?");
 	$updateStmt->execute([$newStatus, $appointmentId, $doctorId]);
+	
+	// If no rows were affected it may be because the status was already the same.
+	if ($updateStmt->rowCount() === 0) {
+		if ($appointment['status'] === $newStatus) {
+			echo json_encode([
+				"success" => true,
+				"message" => $action === 'accept' ? "Appointment already accepted" : "Appointment already rejected",
+				"appointment_id" => $appointmentId,
+				"status" => $newStatus,
+				"refresh_token" => time()
+			]);
+			exit;
+		} else {
+			http_response_code(409);
+			echo json_encode(["success" => false, "message" => "Failed to update appointment status"]);
+			exit;
+		}
+	}
 
 	// Create notification for patient
 	if ($action === 'accept') {
