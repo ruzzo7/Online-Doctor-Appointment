@@ -535,6 +535,9 @@ html, body {
 .status-cancelled { background: #fef2f2; color: #dc2626; }
 .status-cancelled::before { background: #dc2626; }
 
+.status-no_show { background: #fff7ed; color: #c2410c; }
+.status-no_show::before { background: #c2410c; }
+
 /* Action buttons */
 .action-btn {
   padding: 7px 14px;

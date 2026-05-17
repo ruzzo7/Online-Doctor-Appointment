@@ -23,13 +23,20 @@ $appointmentId = isset($input['appointment_id']) ? (int)$input['appointment_id']
 $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : 0;
 $action = isset($input['action']) ? strtolower(trim($input['action'])) : '';
 
-if ($appointmentId <= 0 || $doctorId <= 0 || !in_array($action, ['accept', 'reject'], true)) {
+if ($appointmentId <= 0 || $doctorId <= 0 || !in_array($action, ['accept', 'reject', 'complete', 'cancel', 'no_show'], true)) {
 	http_response_code(400);
 	echo json_encode(["success" => false, "message" => "Invalid appointment_id, doctor_id, or action"]);
 	exit;
 }
 
-$newStatus = $action === 'accept' ? 'upcoming' : 'cancelled';
+$actionStatusMap = [
+	'accept' => 'upcoming',
+	'reject' => 'cancelled',
+	'complete' => 'completed',
+	'cancel' => 'cancelled',
+	'no_show' => 'no_show'
+];
+$newStatus = $actionStatusMap[$action];
 
 try {
 	$apptStmt = $pdo->prepare("SELECT id, status, patient_id, appointment_date FROM appointments WHERE id = ? AND doctor_id = ? LIMIT 1");
@@ -48,15 +55,36 @@ try {
 		exit;
 	}
 
+	if ($action === 'accept' || $action === 'reject') {
+		if ($appointment['status'] !== 'pending') {
+			http_response_code(409);
+			echo json_encode(["success" => false, "message" => "Only pending appointments can be accepted or rejected"]);
+			exit;
+		}
+	} else {
+		if ($appointment['status'] !== 'upcoming') {
+			http_response_code(409);
+			echo json_encode(["success" => false, "message" => "Only upcoming appointments can be marked completed, cancelled, or no-show"]);
+			exit;
+		}
+	}
+
 	$updateStmt = $pdo->prepare("UPDATE appointments SET status = ? WHERE id = ? AND doctor_id = ?");
 	$updateStmt->execute([$newStatus, $appointmentId, $doctorId]);
 	
 	// If no rows were affected it may be because the status was already the same.
 	if ($updateStmt->rowCount() === 0) {
 		if ($appointment['status'] === $newStatus) {
+			$alreadyMessages = [
+				'accept' => 'Appointment already accepted',
+				'reject' => 'Appointment already rejected',
+				'complete' => 'Appointment already completed',
+				'cancel' => 'Appointment already cancelled',
+				'no_show' => 'Appointment already marked as no-show'
+			];
 			echo json_encode([
 				"success" => true,
-				"message" => $action === 'accept' ? "Appointment already accepted" : "Appointment already rejected",
+				"message" => $alreadyMessages[$action],
 				"appointment_id" => $appointmentId,
 				"status" => $newStatus,
 				"refresh_token" => time()
@@ -69,40 +97,48 @@ try {
 		}
 	}
 
-	// Create notification for patient
-	if ($action === 'accept') {
-		$notificationType = 'appointment_approved';
-		$title = 'Appointment Approved! ✓';
-		$message = 'Your appointment has been approved by the doctor. Please note the appointment details.';
-	} else {
-		$notificationType = 'appointment_cancelled';
-		$title = 'Appointment Cancelled';
-		$message = 'Your appointment has been cancelled by the doctor. Please book another appointment if needed.';
+	// Create notification for patient when the status change is meaningful to them.
+	$sendNotification = in_array($action, ['accept', 'reject', 'cancel', 'no_show'], true);
+	if ($sendNotification) {
+		if ($action === 'accept') {
+			$notificationType = 'appointment_approved';
+			$title = 'Appointment Approved! ✓';
+			$message = 'Your appointment has been approved by the doctor. Please note the appointment details.';
+		} elseif ($action === 'reject' || $action === 'cancel') {
+			$notificationType = 'appointment_cancelled';
+			$title = 'Appointment Cancelled';
+			$message = 'Your appointment has been cancelled by the doctor. Please book another appointment if needed.';
+		} else {
+			$notificationType = 'appointment_cancelled';
+			$title = 'Appointment Marked as No-Show';
+			$message = 'Your appointment was marked as no-show by the doctor.';
+		}
+
+		$apptDate = new DateTime($appointment['appointment_date']);
+		$now = new DateTime();
+		$daysDiff = $apptDate->diff($now)->days;
+
+		$notifStmt = $pdo->prepare("\n\t\tINSERT INTO notifications (patient_id, appointment_id, type, title, message, days_until_appointment)\n\t\tVALUES (?, ?, ?, ?, ?, ?)\n\t");
+		$notifStmt->execute([
+			$appointment['patient_id'],
+			$appointmentId,
+			$notificationType,
+			$title,
+			$message,
+			$daysDiff
+		]);
 	}
-
-	// Calculate days until appointment
-	$apptDate = new DateTime($appointment['appointment_date']);
-	$now = new DateTime();
-	$daysDiff = $apptDate->diff($now)->days;
-
-	$notifStmt = $pdo->prepare("
-		INSERT INTO notifications (patient_id, appointment_id, type, title, message, days_until_appointment)
-		VALUES (?, ?, ?, ?, ?, ?)
-	");
-	$notifStmt->execute([
-		$appointment['patient_id'],
-		$appointmentId,
-		$notificationType,
-		$title,
-		$message,
-		$daysDiff
-	]);
+	$responseMessages = [
+		'accept' => 'Appointment accepted successfully',
+		'reject' => 'Appointment rejected successfully',
+		'complete' => 'Appointment marked as completed successfully',
+		'cancel' => 'Appointment cancelled successfully',
+		'no_show' => 'Appointment marked as no-show successfully'
+	];
 
 	echo json_encode([
 		"success" => true,
-		"message" => $action === 'accept'
-			? "Appointment accepted successfully"
-			: "Appointment rejected successfully",
+		"message" => $responseMessages[$action],
 		"appointment_id" => $appointmentId,
 		"status" => $newStatus,
 		// Used by patient and doctor dashboards to refresh cross-tab state.

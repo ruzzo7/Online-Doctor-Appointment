@@ -97,7 +97,7 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
         patient_id INT NOT NULL,
         appointment_date DATETIME NOT NULL,
         reason TEXT,
-        status ENUM('pending', 'upcoming', 'completed', 'cancelled') DEFAULT 'pending',
+        status ENUM('pending', 'upcoming', 'completed', 'cancelled', 'no_show') DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
@@ -105,7 +105,7 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
 
     $pdo->exec($appointmentsTableSql);
     ensureTableIsHealthy($pdo, 'appointments', $appointmentsTableSql);
-    $pdo->exec("ALTER TABLE appointments MODIFY status ENUM('pending', 'upcoming', 'completed', 'cancelled') DEFAULT 'pending'");
+    $pdo->exec("ALTER TABLE appointments MODIFY status ENUM('pending', 'upcoming', 'completed', 'cancelled', 'no_show') DEFAULT 'pending'");
 
     $prescriptionsTableSql = "CREATE TABLE IF NOT EXISTS prescriptions (
         id INT AUTO_INCREMENT PRIMARY KEY,

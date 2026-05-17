@@ -156,13 +156,18 @@ async function loadDoctorProfile() {
 
 async function updateAppointmentStatus(appointmentId, action) {
     const normalizedAction = String(action || '').toLowerCase();
-    if (!['accept', 'reject'].includes(normalizedAction)) {
+    if (!['accept', 'reject', 'complete', 'cancel', 'no_show'].includes(normalizedAction)) {
         showToast('Invalid action requested', 'error');
         return;
     }
 
-    if (normalizedAction === 'reject') {
-        const confirmed = window.confirm('Are you sure you want to reject this appointment?');
+    if (['reject', 'cancel', 'no_show'].includes(normalizedAction)) {
+        const prompts = {
+            reject: 'Are you sure you want to reject this appointment?',
+            cancel: 'Are you sure you want to cancel this appointment?',
+            no_show: 'Mark this appointment as no-show?'
+        };
+        const confirmed = window.confirm(prompts[normalizedAction]);
         if (!confirmed) return;
     }
 
@@ -347,7 +352,7 @@ function renderAppointments() {
                     <th>Date & Time</th>
                     <th>Reason</th>
                     <th>Status</th>
-                    <th>Accept / Reject</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -379,6 +384,15 @@ function renderAppointments() {
                    <button class="action-btn action-btn-outline" onclick="openMedicalRecordModal(${appt.appointment_id}, ${appt.patient_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}')">
                        <i data-lucide="folder-plus"></i> Record
                    </button>
+                   <button class="action-btn action-btn-success" onclick="updateAppointmentStatus(${appt.appointment_id}, 'complete')">
+                       <i data-lucide="check-circle-2"></i> Complete
+                   </button>
+                   <button class="action-btn action-btn-danger" onclick="updateAppointmentStatus(${appt.appointment_id}, 'cancel')">
+                       <i data-lucide="ban"></i> Cancel
+                   </button>
+                   <button class="action-btn action-btn-outline" onclick="updateAppointmentStatus(${appt.appointment_id}, 'no_show')">
+                       <i data-lucide="user-x"></i> No Show
+                   </button>
                </div>`
             : appt.status === 'completed'
                 ? `<button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
@@ -387,6 +401,10 @@ function renderAppointments() {
                 : appt.status === 'cancelled'
                     ? `<button class="action-btn action-btn-outline" disabled>
                            <i data-lucide="x-circle"></i> Rejected
+                       </button>`
+                    : appt.status === 'no_show'
+                        ? `<button class="action-btn action-btn-outline" disabled>
+                           <i data-lucide="user-x"></i> No Show
                        </button>`
                     : `<button class="action-btn action-btn-outline" disabled>
                            <i data-lucide="check"></i> Done

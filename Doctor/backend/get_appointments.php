@@ -48,6 +48,8 @@ try {
         $sql .= " AND a.status = 'completed'";
     } else if ($filter === 'cancelled') {
         $sql .= " AND a.status = 'cancelled'";
+    } else if ($filter === 'no_show') {
+        $sql .= " AND a.status = 'no_show'";
     }
 
     $sql .= " ORDER BY a.appointment_date DESC";

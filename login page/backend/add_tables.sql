@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `appointments` (
   `patient_id` int(11) NOT NULL,
   `appointment_date` datetime NOT NULL,
   `reason` text,
-  `status` enum('pending','upcoming','completed','cancelled') DEFAULT 'pending',
+  `status` enum('pending','upcoming','completed','cancelled','no_show') DEFAULT 'pending',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`doctor_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
