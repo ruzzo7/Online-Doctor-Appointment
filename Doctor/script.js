@@ -14,7 +14,9 @@ function resolveApiBase() {
 const API_BASE = resolveApiBase();
 let currentUser = null;
 let allAppointments = [];
+let allMedicalRecords = [];
 let currentFilter = 'all';
+let currentRecordPatient = null;
 
 // ── Auth Check ──────────────────────────────────────────────
 function checkAuth() {
@@ -65,6 +67,7 @@ function switchSection(section) {
     const titles = {
         appointments: { title: 'Appointments', sub: 'Manage your patient appointments and prescriptions' },
         prescriptions: { title: 'Prescriptions', sub: 'View all prescriptions you have written' },
+        records: { title: 'Medical Records', sub: 'Track patient notes and treatment history' },
         profile: { title: 'My Profile', sub: 'View and manage your account details' }
     };
     const t = titles[section] || titles.appointments;
@@ -91,6 +94,24 @@ async function fetchAppointments() {
     } catch (err) {
         console.error('Fetch error:', err);
         showToast('Connection error loading appointments', 'error');
+    }
+}
+
+async function fetchMedicalRecords() {
+    try {
+        const res = await fetch(`${API_BASE}/medical_records.php?action=list&doctor_id=${currentUser.id}`);
+        const result = await res.json();
+
+        if (result.success) {
+            allMedicalRecords = result.data || [];
+            renderMedicalRecords();
+        } else {
+            console.error('Failed to fetch medical records:', result.message);
+            renderMedicalRecords();
+        }
+    } catch (err) {
+        console.error('Medical records fetch error:', err);
+        renderMedicalRecords();
     }
 }
 
@@ -346,6 +367,9 @@ function renderAppointments() {
                    <button class="action-btn action-btn-primary" onclick="openConsultationModal(${appt.appointment_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}', ${appt.patient_id})">
                        <i data-lucide="stethoscope"></i> Consult
                    </button>
+                   <button class="action-btn action-btn-outline" onclick="openMedicalRecordModal(${appt.appointment_id}, ${appt.patient_id}, '${appt.patient_name.replace(/'/g, "\\'")}', ${appt.patient_age || 'null'}, '${(appt.patient_email || '').replace(/'/g, "\\'")}', '${(appt.patient_phone || '').replace(/'/g, "\\'")}', '${(appt.reason || '').replace(/'/g, "\\'")}')">
+                       <i data-lucide="folder-plus"></i> Record
+                   </button>
                    <button class="action-btn action-btn-success" onclick="updateAppointmentStatus(${appt.appointment_id}, 'accept')">
                        <i data-lucide="check"></i> Accept
                    </button>
@@ -397,6 +421,83 @@ function renderAppointments() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
+function renderMedicalRecords() {
+    const recordsList = document.getElementById('recordsList');
+    const recordsCount = document.getElementById('recordsCount');
+
+    if (recordsCount) {
+        recordsCount.textContent = `${allMedicalRecords.length} record${allMedicalRecords.length === 1 ? '' : 's'}`;
+    }
+
+    if (!allMedicalRecords.length) {
+        recordsList.innerHTML = `
+            <div class="empty-state">
+                <i data-lucide="folder-open"></i>
+                <div class="empty-state-title">No medical records found</div>
+                <div class="empty-state-text">Use an appointment to create the patient's treatment record.</div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    let html = `
+        <table class="appointments-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Record</th>
+                    <th>Diagnosis</th>
+                    <th>Follow-up</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    allMedicalRecords.forEach(record => {
+        const patientName = record.patient_name || 'Unknown';
+        const initials = patientName.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
+        const createdAt = record.created_at ? new Date(record.created_at) : null;
+        const createdStr = createdAt ? createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+        const diagnosis = record.diagnosis || 'No diagnosis';
+        const shortDiagnosis = diagnosis.length > 55 ? `${diagnosis.substring(0, 55)}…` : diagnosis;
+        const followUp = record.follow_up_date || 'None';
+
+        html += `
+            <tr>
+                <td>
+                    <div class="patient-cell">
+                        <div class="patient-avatar">${initials}</div>
+                        <div>
+                            <div class="patient-info-name">${patientName}</div>
+                            <div class="patient-info-email">${record.patient_email || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight: 600; color: var(--text-dark);">${record.record_title || 'Medical Record'}</div>
+                    <div style="font-size: 11px; color: var(--text-soft); margin-top: 2px;">${createdStr}</div>
+                </td>
+                <td>
+                    <span title="${diagnosis}">${shortDiagnosis}</span>
+                </td>
+                <td>${followUp}</td>
+                <td>
+                    <button class="action-btn action-btn-outline" onclick="openMedicalRecordModal(${record.appointment_id}, ${record.patient_id}, '${patientName.replace(/'/g, "\\'")}', ${record.patient_age || 'null'}, '${(record.patient_email || '').replace(/'/g, "\\'")}', '${(record.patient_phone || '').replace(/'/g, "\\'")}', '${(record.appointment_reason || '').replace(/'/g, "\\'")}')">
+                        <i data-lucide="pen-line"></i> Edit
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+    recordsList.innerHTML = html;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
 // ── Prescription Modal ────────────────────────────────────
 function openPrescriptionModal(appointmentId, patientName, patientAge, reason, patientId) {
     document.getElementById('rxAppointmentId').value = appointmentId;
@@ -416,6 +517,88 @@ function openPrescriptionModal(appointmentId, patientName, patientAge, reason, p
 
 function closeModal() {
     document.getElementById('prescriptionModal').classList.remove('active');
+}
+
+async function openMedicalRecordModal(appointmentId = null, patientId = null, patientName = '—', patientAge = null, patientEmail = '', patientPhone = '', reason = '') {
+    currentRecordPatient = patientId ? { patientId, patientName, patientAge, patientEmail, patientPhone, reason } : null;
+
+    document.getElementById('recordAppointmentId').value = appointmentId || '';
+    document.getElementById('recordPatientId').value = patientId || '';
+    document.getElementById('recordPatientName').textContent = patientName || '—';
+    document.getElementById('recordPatientAge').textContent = patientAge ? `${patientAge} years` : 'N/A';
+    document.getElementById('recordPatientPhone').textContent = patientPhone || 'N/A';
+    document.getElementById('recordPatientReason').textContent = reason || 'N/A';
+
+    document.getElementById('recordTitle').value = '';
+    document.getElementById('recordDiagnosis').value = '';
+    document.getElementById('recordTreatment').value = '';
+    document.getElementById('recordMedications').value = '';
+    document.getElementById('recordNotes').value = '';
+    document.getElementById('recordFollowUp').value = '';
+
+    document.getElementById('recordHistoryList').innerHTML = `
+        <div class="empty-state" style="padding: 18px 0;">
+            <i data-lucide="history"></i>
+            <div class="empty-state-title">Loading previous records</div>
+            <div class="empty-state-text">Past records for this patient will appear here.</div>
+        </div>
+    `;
+
+    document.getElementById('medicalRecordModal').classList.add('active');
+
+    try {
+        const targetPatientId = patientId || '';
+        const query = targetPatientId ? `&patient_id=${targetPatientId}` : '';
+        const res = await fetch(`${API_BASE}/medical_records.php?action=list&doctor_id=${currentUser.id}${query}`);
+        const result = await res.json();
+        if (result.success) {
+            allMedicalRecords = result.data || [];
+            renderMedicalRecordHistory(result.data || []);
+        } else {
+            renderMedicalRecordHistory([]);
+        }
+    } catch (err) {
+        console.error('Error loading patient medical history:', err);
+        renderMedicalRecordHistory([]);
+    }
+}
+
+function closeMedicalRecordModal() {
+    document.getElementById('medicalRecordModal').classList.remove('active');
+}
+
+function renderMedicalRecordHistory(records) {
+    const historyList = document.getElementById('recordHistoryList');
+
+    if (!records.length) {
+        historyList.innerHTML = `
+            <div class="empty-state" style="padding: 18px 0;">
+                <i data-lucide="history"></i>
+                <div class="empty-state-title">No previous records</div>
+                <div class="empty-state-text">Past records for this patient will appear here.</div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    historyList.innerHTML = records.slice(0, 5).map(record => {
+        const createdAt = record.created_at ? new Date(record.created_at) : null;
+        const createdStr = createdAt ? createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+        return `
+            <div style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+                    <div>
+                        <div style="font-weight:700; color: var(--text-dark); margin-bottom:4px;">${record.record_title || 'Medical Record'}</div>
+                        <div style="font-size: 13px; color: var(--text-soft); margin-bottom:6px;">${createdStr} ${record.follow_up_date ? ` • Follow-up: ${record.follow_up_date}` : ''}</div>
+                        <div style="font-size: 13px; color: var(--text-dark); line-height: 1.5;">${(record.diagnosis || '').replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ── Save Prescription ──────────────────────────────────────
@@ -574,6 +757,8 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
                 appointment_id: appointmentId,
                 consultation_type: consultationType,
                 consultation_notes: notes,
+                symptoms,
+                observations,
                 doctor_id: currentUser.id
             })
         });
@@ -601,6 +786,7 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
             showToast('Consultation completed successfully!', 'success');
             closeConsultationModal();
             fetchAppointments();
+            fetchMedicalRecords();
         } else {
             showToast(result.message || 'Failed to complete consultation', 'error');
         }
@@ -610,6 +796,57 @@ document.getElementById('consultationForm').addEventListener('submit', async (e)
     } finally {
         submitBtn.disabled = false;
         submitBtn.querySelector('span').textContent = 'Complete Consultation';
+    }
+});
+
+document.getElementById('medicalRecordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('recordSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Saving...';
+
+    const payload = {
+        action: 'save_record',
+        appointment_id: document.getElementById('recordAppointmentId').value,
+        doctor_id: currentUser.id,
+        patient_id: document.getElementById('recordPatientId').value,
+        record_title: document.getElementById('recordTitle').value.trim(),
+        diagnosis: document.getElementById('recordDiagnosis').value.trim(),
+        treatment_plan: document.getElementById('recordTreatment').value.trim(),
+        medications: document.getElementById('recordMedications').value.trim(),
+        consultation_notes: document.getElementById('recordNotes').value.trim(),
+        follow_up_date: document.getElementById('recordFollowUp').value || null
+    };
+
+    if (!payload.appointment_id) {
+        showToast('Select an appointment to save the record', 'error');
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Save Record';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/medical_records.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showToast(result.message || 'Medical record saved successfully!', 'success');
+            closeMedicalRecordModal();
+            fetchMedicalRecords();
+        } else {
+            showToast(result.message || 'Failed to save medical record', 'error');
+        }
+    } catch (err) {
+        console.error('Medical record save error:', err);
+        showToast('Connection error. Please try again.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Save Record';
     }
 });
 
@@ -636,8 +873,10 @@ checkAuth();
 updateClock();
 setInterval(updateClock, 10000);
 fetchAppointments();
+fetchMedicalRecords();
 loadDoctorProfile();
 setInterval(fetchAppointments, 30000);
+setInterval(fetchMedicalRecords, 45000);
 
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -665,4 +904,6 @@ window.setFilter = setFilter;
 window.handleSearch = handleSearch;
 window.openPrescriptionModal = openPrescriptionModal;
 window.closeModal = closeModal;
+window.openMedicalRecordModal = openMedicalRecordModal;
+window.closeMedicalRecordModal = closeMedicalRecordModal;
 window.updateAppointmentStatus = updateAppointmentStatus;

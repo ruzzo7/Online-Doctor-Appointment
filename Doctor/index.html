@@ -48,6 +48,10 @@
                     <i data-lucide="file-text"></i>
                     <span>Prescriptions</span>
                 </button>
+                <button class="nav-item" data-section="records" onclick="switchSection('records')">
+                    <i data-lucide="folder-open"></i>
+                    <span>Medical Records</span>
+                </button>
                 <button class="nav-item" data-section="profile" onclick="switchSection('profile')">
                     <i data-lucide="user-cog"></i>
                     <span>My Profile</span>
@@ -163,6 +167,30 @@
                                 <div class="empty-state-title">Prescriptions will appear here</div>
                                 <div class="empty-state-text">Write a prescription from the Appointments tab to see it
                                     listed here.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ MEDICAL RECORDS SECTION ═══ -->
+                <div class="dashboard-section" id="section-records">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <span class="table-title">Patient Medical Records</span>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <span class="table-count" id="recordsCount">0 records</span>
+                                <button class="btn btn-primary" id="newRecordBtn" onclick="openMedicalRecordModal()"
+                                    style="padding: 10px 16px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                                    Add Record
+                                </button>
+                            </div>
+                        </div>
+                        <div id="recordsList">
+                            <div class="empty-state">
+                                <i data-lucide="folder-open"></i>
+                                <div class="empty-state-title">Medical records will appear here</div>
+                                <div class="empty-state-text">Add a record from an appointment to track treatment history.</div>
                             </div>
                         </div>
                     </div>
@@ -423,6 +451,101 @@
                     <button type="submit" class="btn btn-primary" id="rxSubmitBtn">
                         <i data-lucide="save"></i>
                         <span>Save Prescription</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══ MEDICAL RECORD MODAL ═══ -->
+    <div class="modal-overlay" id="medicalRecordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-icon"><i data-lucide="folder-plus"></i></div>
+                    <div>
+                        <div class="modal-title">Manage Medical Record</div>
+                        <div class="modal-subtitle">Add or update treatment history for a patient</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeMedicalRecordModal()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="patient-summary" id="recordPatientSummary">
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Patient</span>
+                    <span class="patient-summary-value" id="recordPatientName">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Age</span>
+                    <span class="patient-summary-value" id="recordPatientAge">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Reason</span>
+                    <span class="patient-summary-value" id="recordPatientReason">—</span>
+                </div>
+                <div class="patient-summary-item">
+                    <span class="patient-summary-label">Phone</span>
+                    <span class="patient-summary-value" id="recordPatientPhone">—</span>
+                </div>
+            </div>
+
+            <form id="medicalRecordForm">
+                <div class="modal-body">
+                    <input type="hidden" id="recordAppointmentId">
+                    <input type="hidden" id="recordPatientId">
+
+                    <div class="form-group">
+                        <label for="recordTitle">Record Title *</label>
+                        <input type="text" id="recordTitle" placeholder="e.g. Follow-up Visit" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recordDiagnosis">Diagnosis *</label>
+                        <textarea id="recordDiagnosis" placeholder="Diagnosis details..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recordTreatment">Treatment Plan</label>
+                        <textarea id="recordTreatment" placeholder="Treatment plan and next steps..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recordMedications">Medications</label>
+                        <textarea id="recordMedications" placeholder="Prescribed medicines, dosage, duration..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recordNotes">Consultation Notes</label>
+                        <textarea id="recordNotes" placeholder="Clinical notes, observations, advice..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="recordFollowUp">Follow-up Date</label>
+                            <input type="date" id="recordFollowUp">
+                        </div>
+                    </div>
+
+                    <div class="table-card" style="margin-top: 18px;">
+                        <div class="table-header">
+                            <span class="table-title">Previous Records</span>
+                        </div>
+                        <div id="recordHistoryList">
+                            <div class="empty-state" style="padding: 18px 0;">
+                                <i data-lucide="history"></i>
+                                <div class="empty-state-title">No previous records</div>
+                                <div class="empty-state-text">Past records for this patient will appear here.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeMedicalRecordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="recordSubmitBtn">
+                        <i data-lucide="save"></i>
+                        <span>Save Record</span>
                     </button>
                 </div>
             </form>

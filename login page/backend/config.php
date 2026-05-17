@@ -124,6 +124,28 @@ function bootstrapDatabase(PDO $pdo, string $dbName): void
     $pdo->exec($prescriptionsTableSql);
     ensureTableIsHealthy($pdo, 'prescriptions', $prescriptionsTableSql);
 
+    $medicalRecordsTableSql = "CREATE TABLE IF NOT EXISTS medical_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        appointment_id INT NOT NULL,
+        doctor_id INT NOT NULL,
+        patient_id INT NOT NULL,
+        record_title VARCHAR(255) NOT NULL,
+        diagnosis TEXT NOT NULL,
+        treatment_plan TEXT,
+        medications TEXT,
+        consultation_notes TEXT,
+        follow_up_date DATE NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_medical_record_appointment (appointment_id),
+        FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+        FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+    $pdo->exec($medicalRecordsTableSql);
+    ensureTableIsHealthy($pdo, 'medical_records', $medicalRecordsTableSql);
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS specialties (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
