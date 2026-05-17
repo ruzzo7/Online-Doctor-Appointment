@@ -21,6 +21,9 @@ const UPDATE_PROFILE_URL = resolveApiUrl('update_profile.php');
 const GET_DOCTORS_URL = resolveApiUrl('get_doctors.php');
 const GET_APPOINTMENTS_URL = resolveApiUrl('get_appointments.php');
 const BOOK_APPOINTMENT_URL = resolveApiUrl('book_appointment.php');
+const GET_NOTIFICATIONS_URL = resolveApiUrl('get_notifications.php');
+const MARK_NOTIFICATION_READ_URL = resolveApiUrl('mark_notification_read.php');
+const GENERATE_REMINDERS_URL = resolveApiUrl('generate_reminders.php');
 
 let doctorsCache = [];
 
@@ -149,6 +152,10 @@ function showSection(event, sectionId) {
 
   if (sectionId === 'appointments') {
     loadPatientAppointments();
+  }
+
+  if (sectionId === 'notifications') {
+    loadNotifications();
   }
 }
 
@@ -329,6 +336,214 @@ function closeBookingModal() {
     modal.style.display = 'none';
   }
   document.body.style.overflow = '';
+}
+
+// ── Notification Functions ────────────────────────────────────────────────────
+async function generateReminders() {
+  const user = checkAuth();
+  if (!user) return;
+
+  try {
+    const res = await fetch(GENERATE_REMINDERS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patient_id: user.id })
+    });
+    const data = await res.json();
+    console.log('[Patient] Reminders generated:', data);
+  } catch (err) {
+    console.error('[Patient] Error generating reminders:', err);
+  }
+}
+
+async function loadNotifications() {
+  const user = checkAuth();
+  if (!user) return;
+
+  const notificationsList = document.getElementById('notificationsList');
+  if (notificationsList) {
+    notificationsList.innerHTML = '<div class="empty-state"><p style="color: var(--text-muted);">Loading notifications...</p></div>';
+  }
+
+  try {
+    // First generate new reminders
+    await generateReminders();
+
+    // Then fetch all notifications
+    const res = await fetch(`${GET_NOTIFICATIONS_URL}?patient_id=${user.id}`, { method: 'GET' });
+    const data = await res.json();
+
+    if (data.success) {
+      renderNotifications(data.data, data.unread_count);
+    } else {
+      if (notificationsList) {
+        notificationsList.innerHTML = `<div class="empty-state"><p style="color: var(--text-muted);">${data.message || 'Failed to load notifications.'}</p></div>`;
+      }
+    }
+  } catch (err) {
+    console.error('[Patient] Error loading notifications:', err);
+    if (notificationsList) {
+      notificationsList.innerHTML = '<div class="empty-state"><p style="color: var(--text-muted);">Connection error loading notifications.</p></div>';
+    }
+  }
+}
+
+function renderNotifications(notifications, unreadCount) {
+  const notificationsList = document.getElementById('notificationsList');
+  if (!notificationsList) return;
+
+  if (!Array.isArray(notifications) || notifications.length === 0) {
+    notificationsList.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px;"><p style="color: var(--text-muted);">No notifications yet. Your alerts and reminders will appear here.</p></div>';
+    return;
+  }
+
+  notificationsList.innerHTML = notifications.map((notif) => {
+    const isRead = notif.is_read === 1;
+    const createdDate = new Date(notif.created_at);
+    const timeAgo = getTimeAgo(createdDate);
+    
+    // Determine icon based on notification type
+    let icon = '📬';
+    let bgColor = '#f0f4f8';
+    let borderColor = '#e2e8f0';
+    
+    if (notif.type === 'appointment_approved') {
+      icon = '✅';
+      bgColor = '#ecfdf5';
+      borderColor = '#86efac';
+    } else if (notif.type === 'appointment_cancelled') {
+      icon = '❌';
+      bgColor = '#fef2f2';
+      borderColor = '#fca5a5';
+    } else if (notif.type === 'appointment_reminder') {
+      icon = '🔔';
+      bgColor = '#fefce8';
+      borderColor = '#fde047';
+    }
+
+    const appointmentInfo = notif.appointment_date ? 
+      `<div style="font-size: 0.85rem; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid ${borderColor};">
+        <strong>Date:</strong> ${formatAppointmentDate(notif.appointment_date)}<br>
+        ${notif.doctor_name ? `<strong>Doctor:</strong> ${escapeHtml(notif.doctor_name)} (${escapeHtml(notif.specialization || 'Specialist')})<br>` : ''}
+        ${notif.appointment_status ? `<strong>Status:</strong> ${escapeHtml(notif.appointment_status)}` : ''}
+      </div>` : '';
+
+    return `
+      <div class="notification-item" style="
+        background-color: ${bgColor};
+        border-left: 4px solid ${borderColor};
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: ${isRead ? '0.7' : '1'};
+      " onclick="markNotificationAsRead(${notif.id})">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 12px; flex: 1;">
+            <div style="font-size: 24px;">${icon}</div>
+            <div style="flex: 1;">
+              <h3 style="margin: 0 0 4px 0; font-size: 1rem; color: #1f2937;">
+                ${escapeHtml(notif.title)}
+                ${!isRead ? '<span style="display: inline-block; background-color: #ef4444; color: white; border-radius: 50%; width: 8px; height: 8px; margin-left: 8px;"></span>' : ''}
+              </h3>
+              <p style="margin: 0; color: #4b5563; font-size: 0.95rem; line-height: 1.5;">
+                ${escapeHtml(notif.message)}
+              </p>
+              ${appointmentInfo}
+            </div>
+          </div>
+          <span style="font-size: 0.8rem; color: #888; white-space: nowrap; margin-left: 12px;">
+            ${timeAgo}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  
+  return date.toLocaleDateString();
+}
+
+async function markNotificationAsRead(notificationId) {
+  try {
+    const res = await fetch(MARK_NOTIFICATION_READ_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notification_id: notificationId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadNotifications();
+    }
+  } catch (err) {
+    console.error('[Patient] Error marking notification as read:', err);
+  }
+}
+
+async function markAllAsRead() {
+  const user = checkAuth();
+  if (!user) return;
+
+  try {
+    // Fetch all notifications
+    const res = await fetch(`${GET_NOTIFICATIONS_URL}?patient_id=${user.id}`, { method: 'GET' });
+    const data = await res.json();
+
+    if (data.success && Array.isArray(data.data)) {
+      // Mark each unread notification as read
+      const unreadNotifications = data.data.filter(n => n.is_read === 0);
+      
+      for (const notif of unreadNotifications) {
+        await fetch(MARK_NOTIFICATION_READ_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notification_id: notif.id })
+        });
+      }
+
+      loadNotifications();
+    }
+  } catch (err) {
+    console.error('[Patient] Error marking all as read:', err);
+  }
+}
+
+async function clearAllNotifications() {
+  if (!confirm('Are you sure you want to clear all notifications? This cannot be undone.')) {
+    return;
+  }
+
+  const user = checkAuth();
+  if (!user) return;
+
+  try {
+    // Fetch all notifications
+    const res = await fetch(`${GET_NOTIFICATIONS_URL}?patient_id=${user.id}`, { method: 'GET' });
+    const data = await res.json();
+
+    if (data.success && Array.isArray(data.data)) {
+      // Delete all notifications by clearing the list (we'll implement a delete endpoint)
+      // For now, just show empty state
+      const notificationsList = document.getElementById('notificationsList');
+      if (notificationsList) {
+        notificationsList.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px;"><p style="color: var(--text-muted);">No notifications. All cleared!</p></div>';
+      }
+    }
+  } catch (err) {
+    console.error('[Patient] Error clearing notifications:', err);
+  }
 }
 
 function formatAppointmentDate(value) {
@@ -678,3 +893,7 @@ window.logout = logout;
 window.openBookingModal = openBookingModal;
 window.closeBookingModal = closeBookingModal;
 window.loadPatientAppointments = loadPatientAppointments;
+window.loadNotifications = loadNotifications;
+window.markNotificationAsRead = markNotificationAsRead;
+window.markAllAsRead = markAllAsRead;
+window.clearAllNotifications = clearAllNotifications;

@@ -32,7 +32,7 @@ if ($appointmentId <= 0 || $doctorId <= 0 || !in_array($action, ['accept', 'reje
 $newStatus = $action === 'accept' ? 'upcoming' : 'cancelled';
 
 try {
-	$apptStmt = $pdo->prepare("SELECT id, status FROM appointments WHERE id = ? AND doctor_id = ? LIMIT 1");
+	$apptStmt = $pdo->prepare("SELECT id, status, patient_id, appointment_date FROM appointments WHERE id = ? AND doctor_id = ? LIMIT 1");
 	$apptStmt->execute([$appointmentId, $doctorId]);
 	$appointment = $apptStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -51,6 +51,35 @@ try {
 	$updateStmt = $pdo->prepare("UPDATE appointments SET status = ? WHERE id = ? AND doctor_id = ?");
 	$updateStmt->execute([$newStatus, $appointmentId, $doctorId]);
 
+	// Create notification for patient
+	if ($action === 'accept') {
+		$notificationType = 'appointment_approved';
+		$title = 'Appointment Approved! ✓';
+		$message = 'Your appointment has been approved by the doctor. Please note the appointment details.';
+	} else {
+		$notificationType = 'appointment_cancelled';
+		$title = 'Appointment Cancelled';
+		$message = 'Your appointment has been cancelled by the doctor. Please book another appointment if needed.';
+	}
+
+	// Calculate days until appointment
+	$apptDate = new DateTime($appointment['appointment_date']);
+	$now = new DateTime();
+	$daysDiff = $apptDate->diff($now)->days;
+
+	$notifStmt = $pdo->prepare("
+		INSERT INTO notifications (patient_id, appointment_id, type, title, message, days_until_appointment)
+		VALUES (?, ?, ?, ?, ?, ?)
+	");
+	$notifStmt->execute([
+		$appointment['patient_id'],
+		$appointmentId,
+		$notificationType,
+		$title,
+		$message,
+		$daysDiff
+	]);
+
 	echo json_encode([
 		"success" => true,
 		"message" => $action === 'accept'
@@ -65,4 +94,5 @@ try {
 	http_response_code(500);
 	echo json_encode(["success" => false, "message" => "Database Error: " . $e->getMessage()]);
 }
+
 ?>

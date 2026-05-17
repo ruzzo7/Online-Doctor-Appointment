@@ -127,8 +127,26 @@
       </section>
 
       <section id="notifications" class="card hidden">
-        <h2>Notifications</h2>
-        <p style="color: var(--text-muted);">Recent alerts, reminder messages, and updates.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h2>Notifications</h2>
+            <p style="color: var(--text-muted);">Recent alerts, reminders, and updates.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn secondary" id="clearNotificationsBtn" onclick="clearAllNotifications()" title="Clear all notifications">
+              Clear All
+            </button>
+            <button type="button" class="btn secondary" id="markReadBtn" onclick="markAllAsRead()" title="Mark all as read">
+              Mark All Read
+            </button>
+          </div>
+        </div>
+        
+        <div id="notificationsList" class="notifications-list">
+          <div class="empty-state" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No notifications yet. Your alerts and reminders will appear here.</p>
+          </div>
+        </div>
       </section>
 
       <section id="records" class="card hidden">
