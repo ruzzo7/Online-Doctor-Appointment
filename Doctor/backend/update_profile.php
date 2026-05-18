@@ -87,6 +87,20 @@ try {
                            WHERE user_id = ?");
     $stmt->execute([$fullName, $specialization, $experience, $consultationFee, $hospital, $availableFrom ?: null, $availableTo ?: null, $bio, $userId]);
 
+    // If specialization is new (not present in specialties table), insert a pending_specialties entry for admin approval
+    if ($specialization !== '') {
+        $checkSpec = $pdo->prepare("SELECT id FROM specialties WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+        $checkSpec->execute([$specialization]);
+        if (!$checkSpec->fetch()) {
+            $checkPending = $pdo->prepare("SELECT id FROM pending_specialties WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+            $checkPending->execute([$specialization]);
+            if (!$checkPending->fetch()) {
+                $insPending = $pdo->prepare("INSERT INTO pending_specialties (name, requested_by_user_id) VALUES (?, ?)");
+                $insPending->execute([$specialization, $userId]);
+            }
+        }
+    }
+
     echo json_encode(["success" => true, "message" => "Profile updated successfully"]);
 } catch (PDOException $e) {
     http_response_code(500);

@@ -524,6 +524,66 @@ async function renderSpecialties() {
 
         list.appendChild(item);
     });
+
+    // Also show pending specialties (doctor-submitted) for admin approval
+    try {
+        const pending = await fetchData('backend/get_pending_specialties.php');
+        if (pending && pending.length > 0) {
+            const pendingHeader = document.createElement('li');
+            pendingHeader.className = 'request-item';
+            pendingHeader.innerHTML = `<div><h4>Pending Specialties</h4><p style="color:#64748b;">Submitted by doctors — approve to add to master list.</p></div>`;
+            list.insertBefore(pendingHeader, list.firstChild);
+
+            pending.forEach(p => {
+                const item = document.createElement('li');
+                item.className = 'request-item pending-specialty';
+                item.innerHTML = `
+                    <div>
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <p style="color:#64748b;">Requested by user: ${escapeHtml(String(p.requested_by_user_id || 'N/A'))}</p>
+                        <small style="color: #64748b;">Requested: ${new Date(p.created_at).toLocaleDateString()}</small>
+                    </div>
+                    <div class="request-actions">
+                        <button type="button" class="btn btn-secondary approve-pending-btn">Approve</button>
+                        <button type="button" class="btn btn-danger delete-specialty-btn">Remove</button>
+                    </div>
+                `;
+
+                const approveBtn = item.querySelector('.approve-pending-btn');
+                const deleteBtn = item.querySelector('.delete-specialty-btn');
+                if (approveBtn) {
+                    approveBtn.addEventListener('click', async () => {
+                        try {
+                            const res = await postData('backend/approve_pending_specialty.php', { id: p.id });
+                            if (!res.success) {
+                                alert(res.message || 'Failed to approve');
+                                return;
+                            }
+                            await renderSpecialties();
+                        } catch (err) {
+                            console.error('Approve error', err);
+                        }
+                    });
+                }
+
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        // admin can delete the pending entry (re-use delete_specialty endpoint won't work here)
+                        if (!confirm('Remove this pending specialty?')) return;
+                        fetch('backend/delete_pending_specialty.php', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: p.id })
+                        }).then(r => r.json()).then(res => {
+                            if (res.success) renderSpecialties(); else alert(res.message || 'Failed');
+                        }).catch(err => console.error(err));
+                    });
+                }
+
+                list.insertBefore(item, list.firstChild.nextSibling);
+            });
+        }
+    } catch (err) {
+        console.error('Failed to load pending specialties', err);
+    }
 }
 
 async function saveSpecialtyFromForm() {

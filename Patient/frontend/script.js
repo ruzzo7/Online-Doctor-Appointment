@@ -871,6 +871,7 @@ async function loadDoctors() {
     if (data.success) {
       console.log(`[Patient] Successfully fetched ${data.data?.length || 0} doctors`);
       renderDoctors(data.data);
+      await loadSpecialties(data.data || []);
     } else {
       console.error('[Patient] Fetch failed:', data.message);
       if (list) list.innerHTML = '<div class="empty-state" id="doctorListState"><p style="color: var(--text-muted);">Failed to load doctors.</p></div>';
@@ -945,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   showSection(null, initialSection);
 
-  // Load profile data
+  // Load profile and doctors, then populate specialty filters
   loadProfile();
   loadDoctors();
   setEditMode(false);
@@ -1047,6 +1048,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// Load specialties from admin specialty list (approved ones) and populate filter select
+async function loadSpecialties(doctors = []) {
+  try {
+    const isDefaultHttpPort = window.location.protocol.startsWith('http') &&
+      (window.location.port === '' || window.location.port === '80' || window.location.port === '443');
+    const url = isDefaultHttpPort
+      ? '../../Admin/backend/get_specialties.php'
+      : 'http://localhost/Online-Doctor-Appointment/Admin/backend/get_specialties.php';
+
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.success) return;
+
+    const select = document.getElementById('specialty');
+    if (!select) return;
+
+    const approved = (data.data || []).map(spec => spec.name.trim()).filter(Boolean);
+    const activeDoctorSpecs = Array.from(new Set((doctors || [])
+      .map(doc => (doc.specialization || '').trim())
+      .filter(Boolean)
+    ));
+
+    const combined = Array.from(new Set([...approved, ...activeDoctorSpecs]));
+    combined.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+    // preserve the first option (All Specialties)
+    const firstOption = select.querySelector('option') ? select.querySelector('option').outerHTML : '<option value="">All Specialties</option>';
+    select.innerHTML = firstOption;
+
+    combined.forEach(spec => {
+      const opt = document.createElement('option');
+      opt.value = spec;
+      opt.textContent = spec;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Failed to load specialties', err);
+  }
+}
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 function logout() {

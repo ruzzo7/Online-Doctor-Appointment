@@ -130,7 +130,15 @@
                     <label for="specialization">Specialization</label>
                     <div class="field-wrap">
                         <i data-lucide="stethoscope" class="field-icon"></i>
-                        <input type="text" id="specialization" name="specialization" placeholder="e.g. Cardiology">
+                        <select id="specialization" name="specialization">
+                            <option value="">Select specialty</option>
+                        </select>
+                    </div>
+                    <div id="customSpecialtyWrap" class="hidden" style="margin-top:8px;">
+                        <div class="field-wrap">
+                            <input type="text" id="custom_specialization" name="custom_specialization" placeholder="Enter new specialty">
+                        </div>
+                        <span class="error-text" id="custom_specialization-error">Enter a valid specialty name (min 3 chars).</span>
                     </div>
                     <span class="error-text" id="specialization-error">Specialization is required.</span>
                 </div>
@@ -292,6 +300,18 @@
                     if (!validateField(input)) formValid = false;
                 }
             });
+
+            // Special case: if doctor selected 'Other', validate custom field
+            if (currentRole === 'doctor') {
+                const specSelect = document.getElementById('specialization');
+                if (specSelect && specSelect.value === '__other__') {
+                    const custom = document.getElementById('custom_specialization');
+                    if (!custom || custom.value.trim().length < 3) formValid = false;
+                } else {
+                    // ensure a selection exists
+                    if (!specSelect || specSelect.value === '') formValid = false;
+                }
+            }
             regButton.disabled = !formValid;
         }
 
@@ -327,6 +347,56 @@
                 const subtitle = document.querySelector('.form-subtitle');
                 if (subtitle) subtitle.textContent = `Register as a ${role.charAt(0).toUpperCase() + role.slice(1)}`;
             }
+            // Load specialties into select (approved list)
+            (async function loadSpecialties(){
+                try {
+                    const isDefaultHttpPort = window.location.protocol.startsWith('http') &&
+                        (window.location.port === '' || window.location.port === '80' || window.location.port === '443');
+                    const url = isDefaultHttpPort
+                        ? '../../Admin/backend/get_specialties.php'
+                        : 'http://localhost/Online-Doctor-Appointment/Admin/backend/get_specialties.php';
+
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    const sel = document.getElementById('specialization');
+                    const customWrap = document.getElementById('customSpecialtyWrap');
+                    if (!sel) return;
+                    sel.innerHTML = '<option value="">Select specialty</option>';
+                    const list = (data.data || []);
+                    if (list.length === 0) {
+                        // No approved specialties yet — allow doctor to provide a custom specialty
+                        sel.innerHTML = '';
+                        const onlyOpt = document.createElement('option');
+                        onlyOpt.value = '__other__';
+                        onlyOpt.textContent = 'Other (add new)';
+                        sel.appendChild(onlyOpt);
+                        customWrap.classList.remove('hidden');
+                    } else {
+                        list.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s.name;
+                            opt.textContent = s.name;
+                            sel.appendChild(opt);
+                        });
+                        const otherOpt = document.createElement('option');
+                        otherOpt.value = '__other__';
+                        otherOpt.textContent = 'Other (add new)';
+                        sel.appendChild(otherOpt);
+                        customWrap.classList.add('hidden');
+                    }
+
+                    sel.addEventListener('change', () => {
+                        if (sel.value === '__other__') {
+                            customWrap.classList.remove('hidden');
+                        } else {
+                            customWrap.classList.add('hidden');
+                        }
+                        validateAll();
+                    });
+                } catch (err) {
+                    console.error('Failed to load specialties', err);
+                }
+            })();
         });
 
         registerForm.addEventListener('submit', async (e) => {

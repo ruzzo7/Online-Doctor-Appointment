@@ -47,6 +47,18 @@ CREATE TABLE IF NOT EXISTS `specialties` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: pending_specialties (created by doctors during registration/profile when not in standard list)
+CREATE TABLE IF NOT EXISTS `pending_specialties` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `requested_by_user_id` int(11) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `requested_by_idx` (`requested_by_user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Table: notifications (for patient alerts)
 CREATE TABLE IF NOT EXISTS `notifications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

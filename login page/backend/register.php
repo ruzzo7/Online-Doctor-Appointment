@@ -50,16 +50,36 @@ try {
     $userId = $pdo->lastInsertId();
 
     if ($role === 'doctor') {
+        // Determine specialization, support custom specialization via 'custom_specialization'
+        $providedSpec = isset($input['custom_specialization']) && trim($input['custom_specialization']) !== ''
+            ? trim($input['custom_specialization'])
+            : (isset($input['specialization']) ? trim($input['specialization']) : '');
+
         $stmtProf = $pdo->prepare("INSERT INTO doctor_profiles (user_id, full_name, specialization, license_number, experience, hospital, bio) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmtProf->execute([
             $userId,
             $fullName,
-            isset($input['specialization']) ? $input['specialization'] : '',
+            $providedSpec,
             isset($input['licenseNumber']) ? $input['licenseNumber'] : '',
             isset($input['experience']) ? (int)$input['experience'] : 0,
             isset($input['hospital']) ? $input['hospital'] : '',
             isset($input['bio']) ? $input['bio'] : ''
         ]);
+
+        // If the provided specialization is not in the standard specialties table, create a pending request for admin approval
+        if ($providedSpec !== '') {
+            $checkSpec = $pdo->prepare("SELECT id FROM specialties WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+            $checkSpec->execute([$providedSpec]);
+            if (!$checkSpec->fetch()) {
+                // ensure not already pending
+                $checkPending = $pdo->prepare("SELECT id FROM pending_specialties WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1");
+                $checkPending->execute([$providedSpec]);
+                if (!$checkPending->fetch()) {
+                    $insPending = $pdo->prepare("INSERT INTO pending_specialties (name, requested_by_user_id) VALUES (?, ?)");
+                    $insPending->execute([$providedSpec, $userId]);
+                }
+            }
+        }
     } else if ($role === 'patient') {
         $stmtProf = $pdo->prepare("INSERT INTO patient_profiles (user_id, full_name, phone, age) VALUES (?, ?, ?, ?)");
         $stmtProf->execute([
