@@ -21,6 +21,9 @@ const UPDATE_PROFILE_URL = resolveApiUrl('update_profile.php');
 const GET_DOCTORS_URL = resolveApiUrl('get_doctors.php');
 const GET_APPOINTMENTS_URL = resolveApiUrl('get_appointments.php');
 const BOOK_APPOINTMENT_URL = resolveApiUrl('book_appointment.php');
+const CANCEL_APPOINTMENT_URL = resolveApiUrl('cancel_appointment.php');
+const RESCHEDULE_APPOINTMENT_URL = resolveApiUrl('reschedule_appointment.php');
+const DELETE_APPOINTMENT_URL = resolveApiUrl('delete_appointment.php');
 const GET_NOTIFICATIONS_URL = resolveApiUrl('get_notifications.php');
 const MARK_NOTIFICATION_READ_URL = resolveApiUrl('mark_notification_read.php');
 const GENERATE_REMINDERS_URL = resolveApiUrl('generate_reminders.php');
@@ -559,6 +562,27 @@ function formatAppointmentDate(value) {
   });
 }
 
+function parseAppointmentTime(value) {
+  const match = String(value).trim().match(/^([0-9]{1,2}):([0-9]{2})\s*([AP]M)$/i);
+  if (!match) return null;
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const meridian = match[3].toUpperCase();
+
+  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+    return null;
+  }
+
+  if (meridian === 'PM' && hour !== 12) {
+    hour += 12;
+  } else if (meridian === 'AM' && hour === 12) {
+    hour = 0;
+  }
+
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 function renderPatientAppointments(appointments) {
   const list = document.getElementById('patientAppointmentsList');
   const summary = document.getElementById('patientAppointmentsSummary');
@@ -590,6 +614,23 @@ function renderPatientAppointments(appointments) {
     const doctorSpec = appt.doctor_specialization || 'Specialist';
     const appointmentDate = formatAppointmentDate(appt.appointment_date);
     const reason = appt.reason || 'No reason provided';
+    const isEditable = appt.status === 'pending' || appt.status === 'upcoming';
+    const isDeletable = appt.status !== 'pending' && appt.status !== 'upcoming';
+    const actions = isEditable
+      ? `
+          <div class="appointment-actions">
+            <button type="button" class="btn secondary" data-action="reschedule" data-appointment-id="${appt.appointment_id}" data-doctor-id="${appt.doctor_id}">Reschedule</button>
+            <button type="button" class="btn" style="background: #d9534f; color: #fff;" data-action="cancel" data-appointment-id="${appt.appointment_id}" data-doctor-id="${appt.doctor_id}">Cancel</button>
+          </div>
+        `
+      : isDeletable
+      ? `
+          <div class="appointment-actions">
+            <button type="button" class="btn" style="background: #6b7280; color: #fff;" data-action="delete" data-appointment-id="${appt.appointment_id}">Delete</button>
+          </div>
+        `
+      : '';
+
     return `
       <article class="appointment-card">
         <div class="appointment-card__top">
@@ -606,6 +647,7 @@ function renderPatientAppointments(appointments) {
           <div class="appointment-meta"><strong>Doctor Email:</strong> ${appt.doctor_email || 'N/A'}</div>
           <div class="appointment-meta appointment-meta--full"><strong>Reason:</strong> ${reason}</div>
         </div>
+        ${actions}
       </article>
     `;
   }).join('');
@@ -634,6 +676,108 @@ async function loadPatientAppointments() {
     if (list) {
       list.innerHTML = '<div class="empty-state"><p style="color: var(--text-muted);">Connection error loading appointments.</p></div>';
     }
+  }
+}
+
+async function cancelAppointment(appointmentId) {
+  if (!confirm('Are you sure you want to cancel this appointment?')) {
+    return;
+  }
+
+  const user = checkAuth();
+  if (!user) return;
+
+  try {
+    const res = await fetch(CANCEL_APPOINTMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointment_id: Number(appointmentId), patient_id: user.id })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      loadPatientAppointments();
+    } else {
+      alert(data.message || 'Failed to cancel appointment.');
+    }
+  } catch (err) {
+    console.error('Cancel appointment error:', err);
+    alert('Unable to cancel appointment.');
+  }
+}
+
+async function deleteAppointment(appointmentId) {
+  if (!confirm('Delete this appointment record permanently?')) {
+    return;
+  }
+
+  const user = checkAuth();
+  if (!user) return;
+
+  try {
+    const res = await fetch(DELETE_APPOINTMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appointment_id: Number(appointmentId), patient_id: user.id })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      loadPatientAppointments();
+    } else {
+      alert(data.message || 'Failed to delete appointment.');
+    }
+  } catch (err) {
+    console.error('Delete appointment error:', err);
+    alert('Unable to delete appointment.');
+  }
+}
+
+async function rescheduleAppointment(appointmentId, doctorId) {
+  const user = checkAuth();
+  if (!user) return;
+
+  const newDate = prompt('Enter new appointment date (YYYY-MM-DD):');
+  if (!newDate) return;
+  const newTimeInput = prompt('Enter new appointment time (HH:MM, AM/PM):');
+  if (!newTimeInput) return;
+
+  const parsedTime = parseAppointmentTime(newTimeInput);
+  if (!parsedTime) {
+    alert('Invalid time format. Please use HH:MM AM/PM, for example 03:30 PM.');
+    return;
+  }
+
+  const appointmentDateTime = `${newDate}T${parsedTime}`;
+  const dateTime = new Date(appointmentDateTime);
+  if (Number.isNaN(dateTime.getTime())) {
+    alert('Invalid date or time provided. Please use the correct format.');
+    return;
+  }
+
+  try {
+    const res = await fetch(RESCHEDULE_APPOINTMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appointment_id: Number(appointmentId),
+        patient_id: user.id,
+        appointment_date: appointmentDateTime
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      loadPatientAppointments();
+    } else {
+      alert(data.message || 'Failed to reschedule appointment.');
+    }
+  } catch (err) {
+    console.error('Reschedule appointment error:', err);
+    alert('Unable to reschedule appointment.');
   }
 }
 
@@ -865,6 +1009,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const refreshAppointmentsBtn = document.getElementById('refreshAppointmentsBtn');
   if (refreshAppointmentsBtn) {
     refreshAppointmentsBtn.addEventListener('click', loadPatientAppointments);
+  }
+
+  const appointmentsList = document.getElementById('patientAppointmentsList');
+  if (appointmentsList) {
+    appointmentsList.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+
+      const action = button.dataset.action;
+      const appointmentId = button.dataset.appointmentId;
+      const doctorId = button.dataset.doctorId;
+
+      if (action === 'cancel' && appointmentId) {
+        cancelAppointment(appointmentId);
+      }
+
+      if (action === 'reschedule' && appointmentId) {
+        rescheduleAppointment(appointmentId, doctorId);
+      }
+
+      if (action === 'delete' && appointmentId) {
+        deleteAppointment(appointmentId);
+      }
+    });
   }
 
   window.addEventListener('storage', (event) => {
